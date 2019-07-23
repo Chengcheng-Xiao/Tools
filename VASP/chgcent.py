@@ -110,10 +110,7 @@ xdiff = latticelength[0]/float(ngridpts[0])
 ydiff = latticelength[1]/float(ngridpts[1])
 zdiff = latticelength[2]/float(ngridpts[2])
 
-
 avg_x=avg_y=avg_z=0.0
-
-
 # Calculate averaged position
 for i in range(ngridpts[0]):
     x = float(i)/ngridpts[0]
@@ -130,24 +127,16 @@ for i in range(ngridpts[2]):
     avg_z += z*average_z[i]/average_z.sum()
 
 
-
-
 # Print out average
 #-------------------
 print "\nCell matrix:"
-
-
 print cell
-
 
 print "\nCrystal axis length (a,b,c) = %15.8g , %15.8g , %15.8g" % (latticelength[0],latticelength[1], latticelength[2])
 
-
 print "\nCharge center (crystal axis) = %15.8g , %15.8g , %15.8g" % (avg_x, avg_y, avg_z)
 
-
 print "\nCharge center (Cartisen axis) = %15.8g , %15.8g , %15.8g" % (avg_x*cell[0,0] + avg_y*cell[1,0] + avg_z*cell[2,0], avg_x*cell[0,1] + avg_y*cell[1,1] + avg_z*cell[2,1], avg_x*cell[0,2] + avg_y*cell[1,2] + avg_z*cell[2,2])
-
 
 # Post process
 #-------------------
