@@ -1,0 +1,8 @@
+# ignore generated html files,
+#UNK*
+#WAVECAR
+#CHGCAR
+**/.DS_Store
+not_ready
+# except foo.html which is maintained by hand
+#!foo.html
