@@ -122,6 +122,24 @@ if spin == 3: # SOC
     chg_x.write(filename="SPINCAR_x.vasp",format="chgcar")
     chg_y.write(filename="SPINCAR_y.vasp",format="chgcar")
     chg_z.write(filename="SPINCAR_z.vasp",format="chgcar")
+    # adding atomic species
+    fin = [atoms.get_chemical_symbols()[0]]
+    for i in range(len(atoms.get_chemical_symbols())):
+        if i == len(atoms.get_chemical_symbols())-1: break
+        if atoms.get_chemical_symbols()[i] != atoms.get_chemical_symbols()[i+1]:
+            fin.append(atoms.get_chemical_symbols()[i+1])
+
+    for chgfiles in ['SPINCAR_total.vasp','SPINCAR_x.vasp','SPINCAR_y.vasp','SPINCAR_z.vasp']:
+        f = open(chgfiles, "r")
+        contents = f.readlines()
+        f.close()
+
+        contents.insert(5, ' '.join(fin)+'\n')
+
+        f = open(chgfiles, "w")
+        contents = "".join(contents)
+        f.write(contents)
+        f.close()
     print "done."
 
 if spin == 2: # Spin polarized
@@ -144,7 +162,7 @@ if spin == 2: # Spin polarized
     # Print out charge density
     #--------------------------
     # Check whether CHGDIFF exists
-    for chgfiles in ['SPINCAR_total.vasp','SPINCAR_up+own.vasp','SPINCAR_up-down.vasp','SPINCAR_up.vasp','SPINCAR_down.vasp']:
+    for chgfiles in ['SPINCAR_up+down.vasp','SPINCAR_up-down.vasp','SPINCAR_up.vasp','SPINCAR_down.vasp']:
         if os.path.isfile("./"+chgfiles):
             print "\n**WARNING: A file called ' " + chgfiles + " ' already exists in this directory."
             yesno=raw_input("Type y to continue and overwrite it, any other key to stop\n")
@@ -157,6 +175,24 @@ if spin == 2: # Spin polarized
     chg_upmdown.write(filename="SPINCAR_up-down.vasp",format="chgcar")
     chg_up.write(filename="SPINCAR_up.vasp",format="chgcar")
     chg_down.write(filename="SPINCAR_down.vasp",format="chgcar")
+    # adding atomic species
+    fin = [atoms.get_chemical_symbols()[0]]
+    for i in range(len(atoms.get_chemical_symbols())):
+        if i == len(atoms.get_chemical_symbols())-1: break
+        if atoms.get_chemical_symbols()[i] != atoms.get_chemical_symbols()[i+1]:
+            fin.append(atoms.get_chemical_symbols()[i+1])
+
+    for chgfiles in ['SPINCAR_up+down.vasp','SPINCAR_up-down.vasp','SPINCAR_up.vasp','SPINCAR_down.vasp']:
+        f = open(chgfiles, "r")
+        contents = f.readlines()
+        f.close()
+
+        contents.insert(5, ' '.join(fin)+'\n')
+
+        f = open(chgfiles, "w")
+        contents = "".join(contents)
+        f.write(contents)
+        f.close()
     print "done."
 
 # Post process
