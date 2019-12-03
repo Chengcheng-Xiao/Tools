@@ -130,6 +130,24 @@ if prm.visualize==True:
 # Write final structure to file
 write(i_POSCAR+"_"+str(prm.symmetry)+".vasp",final_pos,format='vasp')
 
+# adding atomic species
+fin = [final_pos.get_chemical_symbols()[0]]
+for i in range(len(final_pos.get_chemical_symbols())):
+    if i == len(final_pos.get_chemical_symbols())-1: break
+    if final_pos.get_chemical_symbols()[i] != final_pos.get_chemical_symbols()[i+1]:
+        fin.append(final_pos.get_chemical_symbols()[i+1])
+
+f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "r")
+contents = f.readlines()
+f.close()
+
+contents.insert(5, ' '.join(fin)+'\n')
+
+f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "w")
+contents = "".join(contents)
+f.write(contents)
+f.close()
+
 print "\nOutput file name: %s " % str(i_POSCAR+"_"+str(prm.symmetry)+".vasp")
 # Post process
 #----------------------------
