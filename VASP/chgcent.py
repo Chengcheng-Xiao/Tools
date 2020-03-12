@@ -27,10 +27,15 @@ if not os.path.isfile(sys.argv[1]):
     print "\n** ERROR: Input file %s was not found." % sys.argv[1]
     sys.exit(0)
 
+if not os.path.isfile(sys.argv[2]):
+    print "\n** ERROR: Input file %s was not found." % sys.argv[1]
+    sys.exit(0)
+
 
 # Read information from command line
 # First specify location of LOCPOT
 LOCPOTfile = sys.argv[1].lstrip()
+OUTCARfile = sys.argv[2].lstrip()
 
 
 # Open geometry and density class objects
@@ -42,7 +47,7 @@ del vasp_charge
 
 # Open outcar to find zval and ions_per_type
 #-----------------------------------------
-with open("OUTCAR") as search:
+with open(OUTCARfile) as search:
     for line in search:
         line = line.rstrip()  # remove '\n' at end of line
         if "ZVAL" in line:
@@ -163,9 +168,8 @@ sys.stdout.write("\033[0;0m") # reset color
 #-------------------
 print "\nIonic part"
 print "-----------------"
-
+print "Reading file: %s" % OUTCARfile
 print "ZVAL          = ", ZVAL
-
 print "ions per type = ", ions_per_type
 
 
@@ -173,9 +177,9 @@ if len(ions_per_type) != len(ZVAL):
     print("len(ions_per_type) != len(ZVAL)")
     sys.exit(0)
 
-print "\nionic positions (Cartisen) for each type:"
+print "\nIonic positions (Cartisen) for each type:"
 for i in range(len(ZVAL)):
-    print "type : %i" % int(i)
+    print "Type : %i" % int(i)
     print pos[sum(int(n) for n in (ions_per_type[:i])):sum(int(n) for n in (ions_per_type[:i])) + int(ions_per_type[i])]
 
 # calculate total ionic dipole moments
