@@ -72,3 +72,15 @@ view_atoms.py POSCAR
 ```
 vtotav.py LOCPOT z
 ```
+
+### plotwfc
+*use vaspwfc from [QijingZheng/VaspBandUnfolding](https://github.com/QijingZheng/VaspBandUnfolding/blob/master/vaspwfc.py).*
+- Read:
+  - WAVECAR
+  - POSCAR
+- Output:
+  - WAV.*.vasp
+- Usage:
+```
+plotwfc -b 12 -k 1 -s 1 --soc
+```
