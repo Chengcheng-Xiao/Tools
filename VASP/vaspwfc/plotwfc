@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """
-A script to find the the symmetry of unitcell and return refined structures.
-
-Depends on ase and spglib
+A wrapper to plot VASP's pseudo wave-functions
+Depends on vasp_constant and vaspwfc
 """
 
 import argparse, os
@@ -12,6 +11,8 @@ from vaspwfc import vaspwfc
 #----------------------------
 # Do we want to convert the final structure into use primitive cell?
 parser = argparse.ArgumentParser(description='A script to find the the symmetry of unitcell and return refined structures.')
+parser.add_argument('-elf', action="store_true", default=False, dest="lelf",
+                    help='Calculate ELF? (Default=False)')
 parser.add_argument('-soc', '-ncl',action="store_true", default=False, dest='lsorbit',
                     help='is spinor WAVECAR?. (Default=False)')
 parser.add_argument('-s', action="store", default=1, type=int, dest="ispin",
@@ -20,6 +21,8 @@ parser.add_argument('-b', action="store", default=1, type=int, dest="iband",
                     help='band number (Default=1)')
 parser.add_argument('-k', action="store", default=1, type=int, dest="ikpt",
                     help='k-point number (Default=1)')
+parser.add_argument('-o','--OUTCAR', action="store", default=str('./OUTCAR'), dest="OUTCAR",
+                    help='input OUTCAR name (Default=./OUTCAR)')
 parser.add_argument('-w','--WAVECAR', action="store", default=str('./WAVECAR'), dest="WAVECAR",
                     help='input WAVECAR name (Default=./WAVECAR)')
 parser.add_argument('-c','--POSCAR', action="store", default=str('./POSCAR'), dest="POSCAR",
@@ -33,30 +36,55 @@ prm = parser.parse_args()
 #print time.strftime("%H:%M:%S on %a %d %b %Y")
 
 # check input
+#----------------------------
+if not os.path.isfile(prm.OUTCAR):
+    print "\n** ERROR: file %s not found." % prm.OURCAR
+    sys.exit(0)
+
 if not os.path.isfile(prm.WAVECAR):
     print "\n** ERROR: file %s not found." % prm.WAVECAR
     sys.exit(0)
 
-#print prm.lsorbit
+if not os.path.isfile(prm.POSCAR):
+    print "\n** ERROR: file %s not found." % prm.POSCAR
+    sys.exit(0)
+
+# Reading wfc
+#----------------------------
 wav = vaspwfc(prm.WAVECAR, lsorbit=prm.lsorbit)
 # KS orbital in real space, double the size of the FT grid
 phi = wav.wfc_r(ispin=prm.ispin,ikpt=prm.ikpt, iband=prm.iband, ngrid=wav._ngrid * 2)
-# Save the orbital into files. Since the wavefunction consist of complex
-# numbers, the real and imaginary part are saved separately.
-if prm.lsorbit == False:
-    wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
-elif prm.lsorbit == True:
-    wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
-else:
-    print "\n** ERROR: lsorbit read in wrong."
-    sys.exit(0)
 
-# # for WAVECAR from a noncollinear run, the wavefunction at each k-piont/band is
-# # a two component spinor. Turn on the lsorbit flag when reading WAVECAr.
-# xx = vaspwfc('examples/wfc_r/wavecar_mose2-wse2', lsorbit=True)
-# phi_spinor = xx.wfc_r(1, 1, 36, ngrid=xx._ngrid*2)
-# for ii in range(2):
-#     phi = phi_spinor[ii]
-#     prefix = 'spinor_{:02d}'.format(ii)
-#     xx.save2vesta(phi, prefix=prefix,
-#             poscar='examples/wfc_r/poscar_mose2-wse2')
+# Processing data
+#----------------------------
+if prm.lelf == True:
+    warning = """
+    #-------------------------- WARNING ------------------------------#
+    *                ELF mode only suuports ISYM=-1.                  *
+    #-----------------------------------------------------------------#
+            """
+    print warning
+    # get weight of each kpt
+    kptw = []
+    with open('IBZKPT') as fp:
+        lines = fp.readlines()
+        num_kpts = int(lines[1].rstrip("\n"))
+        for i in lines[3:3+num_kpts]:
+            kptw.append(int(i.rstrip("\n").split()[3]))
+    # Calculate elf
+    fin_elf = wav.elf(kptw,warn=False)
+    # Save elf
+    wav.save2vesta(fin_elf[0], prefix="ELF", lreal=True, poscar=prm.POSCAR)
+    # Rename elf
+    os.rename("ELF_r.vasp", "ELFCAR_WAV.vasp")
+elif prm.lelf == False:
+    if prm.lsorbit == False:
+        wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
+    elif prm.lsorbit == True:
+        wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
+    else:
+        print "\n** ERROR: something wrong."
+        sys.exit(0)
+else:
+    print "\n** ERROR: something wrong."
+    sys.exit(0)
