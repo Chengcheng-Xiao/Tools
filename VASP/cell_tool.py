@@ -1,9 +1,6 @@
-
 #!/usr/bin/env python
 """
 A script to make supercell and find atomic distance
-
-Depends on ase and spglib
 """
 
 import argparse
