@@ -79,8 +79,21 @@ vtotav.py LOCPOT z
   - WAVECAR
   - POSCAR
 - Output:
-  - WAV.*.vasp
+  - `WAV.*.vasp`
 - Usage:
 ```
 plotwfc -b 12 -k 1 -s 1 --soc
+```
+
+### cell_tool.py
+- Read:
+  - POSCAR/CONTCAR
+- Output:
+  - POSCAR.super.vasp
+  - distance between atoms.
+- Usage:
+```
+cell_tool.py -d --dim '1 2 1' -v -di --dis '0 1'
+
+cell_tool.py -d --dim '1 2 0 0 1 0 0 0 1' -v
 ```
