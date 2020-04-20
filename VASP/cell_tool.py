@@ -4,9 +4,7 @@ A script to make supercell and find atomic distance
 """
 
 import argparse
-import spglib
 from ase.io import read, write
-import ase.io.vasp
 from ase.build.supercells import make_supercell
 from ase import Atoms
 from ase.visualize import view
@@ -17,24 +15,15 @@ import datetime
 import time
 
 # is digit? function
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        pass
-    try:
-        import unicodedata
-        unicodedata.numeric(s)
-        return True
-    except (TypeError, ValueError):
-        pass
-    return False
+def check_int(s):
+    if s[0] in ('-', '+'):
+        return s[1:].isdigit()
+    return s.isdigit()
 
 # Command line praser
 #----------------------------
 parser = argparse.ArgumentParser(description='A script to make supercell(transformed supercell) and measure atomic distances.')
-parser.add_argument('-i','--insert', action="store_true", default=False, dest='over',
+parser.add_argument('-o','--overwrite', action="store_true", default=False, dest='over',
                     help='Overwrite POSCAR?. (Default=False)')
 parser.add_argument('-vi','--visualize', action="store_true", default=False, dest="visualize",
                     help='Use ASE-GUI to visualize structure (Default=False)')
@@ -45,12 +34,11 @@ parser.add_argument('-c','--POSCAR', action="store", default=str('POSCAR'), dest
 parser.add_argument('-d', action="store_true", default=False, dest="get_super",
                     help='Make supercell? (Default=False)')
 parser.add_argument('--dim', action="store", default="1 0 0 0 1 0 0 0 1", dest="T_mat",
-                    help='Transformation matrix ("1,0,0,0,1,0,0,0,1" or "1 1 1")')
+                    help='Transformation matrix (full matrix"1,0,0,0,1,0,0,0,1" or diagonal terms "1 1 1")')
 parser.add_argument('-di', action="store_true", default=False, dest="getdist",
                     help='Get distance? (Default=False)')
 parser.add_argument('--dis', action="store", default="1 2", dest="atom_list",
                     help='Distance between atoms a and b, starting from 1 (Default="1 2")')
-
 
 prm = parser.parse_args()
 
@@ -70,19 +58,33 @@ if prm.get_super == True:
     # initialize Tmat
     Tmat = np.eye(3)
     # construct Tmat
-    if len(map(int, prm.T_mat.split())) == 9:
-        Tmat = np.reshape(map(int, prm.T_mat.split()),[3,3])
+    if len(prm.T_mat.split()) == 9:
+        if all(check_int(s) for s in prm.T_mat.split()):
+            Tmat = np.reshape(map(int, prm.T_mat.split()),[3,3])
+        else:
+            print "\n** ERROR: Transformation matrix elements should be int."
+            sys.exit(0)
     elif len(map(int, prm.T_mat.split())) == 3:
-        np.fill_diagonal(Tmat,map(int, prm.T_mat.split()))
-        # print Tmat
+        if all(check_int(s) for s in prm.T_mat.split()):
+            np.fill_diagonal(Tmat,map(int, prm.T_mat.split()))
+        else:
+            print "\n** ERROR: Transformation matrix elements should be int."
+            sys.exit(0)
     else:
-        print "\n** ERROR: dimenstion of the Transformation mat wrong."
+        print "\n** ERROR: dimension of the transformation matrix wrong."
         sys.exit(0)
 
+if prm.getdist ==True:
+    if len(prm.atom_list.split()) == 2:
+        if all(check_int(s) for s in prm.atom_list.split()):
+            atom_list = map(int, prm.atom_list.split())
+        else:
+            print "\n** ERROR: Indexes of atoms should be int."
+            sys.exit(0)
+    else:
+        print "\n** ERROR: number indexes of atoms should be 2."
+        sys.exit(0)
 
-# if not is_number(prm.symmetry):
-#     print "\n** ERROR: symmetry tolerance shoule be a number."
-#     sys.exit(0)
 
 # Read information from command line
 # First specify location of POSCAR
@@ -133,20 +135,21 @@ if prm.get_super == True:
     # some post processing...
     #----------------------------
     indices = []
-    symb    = []
+    symbls    = []
     for symbol in fin:
         ii = 0
         for atom in super_cell.get_chemical_symbols():
             if atom == symbol:
                 indices.append(ii) # get sorted atomic index
-                symb.append(symbol) # get sorted atomic symbols
+                symbls.append(symbol) # get sorted atomic symbols
             ii += 1
 
     pos_new     = [super_cell.get_positions()[i] for i in indices]
-    symbls      = symb
     super_cell.set_positions(pos_new)
     super_cell.set_chemical_symbols(symbls)
 
+    # get supercell informations
+    #----------------------------
     lattice     = super_cell.get_cell()
     positions   = super_cell.get_scaled_positions()
     numbers     = super_cell.get_atomic_numbers()
@@ -164,32 +167,39 @@ if prm.get_super == True:
     # visualize?
     if prm.visualize==True:
         view(super_cell)
+
     # Write super structure to file
     if prm.over == True:
         write("POSCAR", super_cell, format='vasp')
     else:
         write(i_POSCAR+"_"+"super"+".vasp",super_cell,format='vasp')
+
     # adding atomic species
+    #----------------------------
+    # get species
     fin = [super_cell.get_chemical_symbols()[0]]
     for i in range(len( super_cell.get_chemical_symbols())):
         if i == len( super_cell.get_chemical_symbols())-1: break
         if  super_cell.get_chemical_symbols()[i] !=  super_cell.get_chemical_symbols()[i+1]:
             fin.append( super_cell.get_chemical_symbols()[i+1])
-
+    # open file and readlines
     if prm.over == True:
         f = open("POSCAR", "r")
     else:
         f = open(i_POSCAR+"_"+"super"+".vasp", "r")
     contents = f.readlines()
     f.close()
-
+    # format string
     contents.insert(5, ' '.join(fin)+'\n')
-
-    f = open(i_POSCAR+"_"+"super"+".vasp", "w")
+    # write string to file
+    if prm.over == True:
+        f = open("POSCAR", "r")
+    else:
+        f = open(i_POSCAR+"_"+"super"+".vasp", "w")
     contents = "".join(contents)
     f.write(contents)
     f.close()
-
+    # output
     if prm.prt == True:
         if prm.over == False:
             print "\nOutput file name: %s " % str(i_POSCAR+"_"+"super"+".vasp")
@@ -198,7 +208,6 @@ if prm.get_super == True:
 # get distance
 #----------------------------
 if prm.getdist == True:
-    atom_list = map(int, prm.atom_list.split())
     # here we use natural: atomic number starting from 1.
     dist = initial_pos.get_distance(atom_list[0]-1,atom_list[1]-1)
     if prm.prt == True:
