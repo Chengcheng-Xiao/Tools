@@ -97,3 +97,16 @@ cell_tool.py -d --dim '1 2 1' -v -di --dis '0 1'
 
 cell_tool.py -d --dim '1 2 0 0 1 0 0 0 1' -v
 ```
+
+### get_pp.py
+- Read:
+  - POSCAR
+- Output:
+  - POTCAR
+- Usage:
+```
+get_pp.py -c "POSCAR" -o -s "manual"
+
+get_pp.py -i "Au Fe" -o -s "recommended" -xc "LDA"
+
+```
