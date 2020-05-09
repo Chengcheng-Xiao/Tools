@@ -67,6 +67,10 @@ print "Reading file: %s" % LOCPOTfile
 cell = atoms.cell
 pos = atoms.get_positions()
 
+# Read Lattice stuff
+#---------------------------------------------
+dv = np.linalg.det(cell)/(np.array(potl).shape[0]*np.array(potl).shape[1]*np.array(potl).shape[2])
+dr = cell/np.array(potl).shape
 
 # Find length of lattice vectors
 #--------------------------------
@@ -147,21 +151,29 @@ for i in range(ngridpts[2]):
 
 # Total electron numbers
 #-------------------
-total_elect = 0
-for i in range(len(ZVAL)):
-    total_elect += int(ions_per_type[i])*int(float(ZVAL[i]))
+total_elect = np.sum(np.array(potl))*dv
+print "\nTotal integrated electron number = %8.5f" % total_elect
+# total_elect = 0
+# for i in range(len(ZVAL)):
+#     total_elect += int(ions_per_type[i])*int(float(ZVAL[i]))
 
 # Print out average
 #-------------------
 print "\nCell matrix:"
 print cell
 
-print "\nCrystal axis length (a,b,c)      = %8.5f , %8.5f , %8.5f" % (latticelength[0],latticelength[1], latticelength[2])
+print "\nCrystal axis length (a,b,c)      = %8.5f , %8.5f , %8.5f" % (latticelength[0],
+                                                                      latticelength[1],
+                                                                      latticelength[2])
 print "Charge center (crystal axis)     = %8.5f , %8.5f , %8.5f" % (avg_x, avg_y, avg_z)
-print "Charge center (Cartisen axis)    = %8.5f , %8.5f , %8.5f" % (avg_x*cell[0,0]+avg_y*cell[1,0]+avg_z*cell[2,0], avg_x*cell[0,1]+avg_y*cell[1,1]+avg_z*cell[2,1], avg_x*cell[0,2]+avg_y*cell[1,2]+avg_z*cell[2,2])
+print "Charge center (Cartisen axis)    = %8.5f , %8.5f , %8.5f" % (avg_x*cell[0,0]+avg_y*cell[1,0]+avg_z*cell[2,0],
+                                                                    avg_x*cell[0,1]+avg_y*cell[1,1]+avg_z*cell[2,1],
+                                                                    avg_x*cell[0,2]+avg_y*cell[1,2]+avg_z*cell[2,2])
 
 sys.stdout.write("\033[0;32m") # set color green
-print "\nTotal elect dipole moments (e*A) =  %8.5f  %8.5f  %8.5f" % (total_elect*(avg_x*cell[0,0]+avg_y*cell[1,0]+avg_z*cell[2,0]), total_elect*(avg_x*cell[0,1]+avg_y*cell[1,1]+avg_z*cell[2,1]), total_elect*(avg_x*cell[0,2]+avg_y*cell[1,2]+avg_z*cell[2,2]))
+print "\nTotal elect dipole moments (e*A) =  %8.5f  %8.5f  %8.5f" % (total_elect*(avg_x*cell[0,0]+avg_y*cell[1,0]+avg_z*cell[2,0]),
+                                                                     total_elect*(avg_x*cell[0,1]+avg_y*cell[1,1]+avg_z*cell[2,1]),
+                                                                     total_elect*(avg_x*cell[0,2]+avg_y*cell[1,2]+avg_z*cell[2,2]))
 sys.stdout.write("\033[0;0m") # reset color
 
 # get ion types and numbers and val
@@ -193,7 +205,9 @@ sys.stdout.write("\033[0;32m") # set color green
 print "\nTotal ionic dipole moments (e*A) =  %8.5f  %8.5f  %8.5f" % (total_ion_dipole[0], total_ion_dipole[1], total_ion_dipole[2])
 
 sys.stdout.write("\033[1;31m" ) # set color red
-print "\nTotal dipole moments (e*A)       =  %8.5f  %8.5f  %8.5f" % (total_ion_dipole[0]-total_elect*(avg_x*cell[0,0]+avg_y*cell[1,0]+avg_z*cell[2,0]), total_ion_dipole[1]-total_elect*(avg_x*cell[0,1]+avg_y*cell[1,1]+avg_z*cell[2,1]), total_ion_dipole[2]-total_elect*(avg_x*cell[0,2]+avg_y*cell[1,2]+avg_z*cell[2,2]))
+print "\nTotal dipole moments (e*A)       =  %8.5f  %8.5f  %8.5f" % (total_ion_dipole[0]-total_elect*(avg_x*cell[0,0]+avg_y*cell[1,0]+avg_z*cell[2,0]),
+                                                                     total_ion_dipole[1]-total_elect*(avg_x*cell[0,1]+avg_y*cell[1,1]+avg_z*cell[2,1]),
+                                                                     total_ion_dipole[2]-total_elect*(avg_x*cell[0,2]+avg_y*cell[1,2]+avg_z*cell[2,2]))
 sys.stdout.write("\033[0;0m") # reset color
 
 
