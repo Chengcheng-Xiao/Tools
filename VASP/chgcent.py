@@ -203,13 +203,19 @@ for i in range(len(ZVAL)):
 
 sys.stdout.write("\033[0;32m") # set color green
 print "\nTotal ionic dipole moments (e*A) =  %8.5f  %8.5f  %8.5f" % (total_ion_dipole[0], total_ion_dipole[1], total_ion_dipole[2])
+sys.stdout.write("\033[0;0m") # reset color
+
+print '''
+! Total dipole moment comes from:
+!     \D_{ion} - \D_{elect}
+! So the direction is correct.
+! To use C/A unit, simply dot abs(e).'''
 
 sys.stdout.write("\033[1;31m" ) # set color red
 print "\nTotal dipole moments (e*A)       =  %8.5f  %8.5f  %8.5f" % (total_ion_dipole[0]-total_elect*(avg_x*cell[0,0]+avg_y*cell[1,0]+avg_z*cell[2,0]),
                                                                      total_ion_dipole[1]-total_elect*(avg_x*cell[0,1]+avg_y*cell[1,1]+avg_z*cell[2,1]),
                                                                      total_ion_dipole[2]-total_elect*(avg_x*cell[0,2]+avg_y*cell[1,2]+avg_z*cell[2,2]))
 sys.stdout.write("\033[0;0m") # reset color
-
 
 
 # Post process
