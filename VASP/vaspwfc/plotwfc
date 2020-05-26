@@ -10,9 +10,11 @@ from vaspwfc import vaspwfc
 # Command line praser
 #----------------------------
 # Do we want to convert the final structure into use primitive cell?
-parser = argparse.ArgumentParser(description='A script to find the the symmetry of unitcell and return refined structures.')
+parser = argparse.ArgumentParser(description="A script to plot VASP's pseudo-wavefunction and related densities.")
 parser.add_argument('-elf', action="store_true", default=False, dest="lelf",
                     help='Calculate ELF? (Default=False)')
+parser.add_argument('-chg', action="store_true", default=False, dest="lchg",
+                    help='Calculate band decomposed charge? (Default=False)')
 parser.add_argument('-soc', '-ncl',action="store_true", default=False, dest='lsorbit',
                     help='is spinor WAVECAR?. (Default=False)')
 parser.add_argument('-s', action="store", default=1, type=int, dest="ispin",
@@ -79,7 +81,11 @@ if prm.lelf == True:
     os.rename("ELF_r.vasp", "ELFCAR_WAV.vasp")
 elif prm.lelf == False:
     if prm.lsorbit == False:
-        wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
+        if prm.lchg == True:
+            print 'te'
+            wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR, lchg=True)
+        else:
+            wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
     elif prm.lsorbit == True:
         wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
     else:

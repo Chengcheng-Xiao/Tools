@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-   
+# -*- coding: utf-8 -*-
 
 import os
 import numpy as np
@@ -9,8 +9,8 @@ from multiprocessing import cpu_count
 from scipy.fftpack import fftfreq, fftn, ifftn
 
 ############################################################
-def save2vesta(phi=None, poscar='POSCAR', prefix='wfc', 
-               lgam=False, lreal=False, ncol=10):
+def save2vesta(phi=None, poscar='POSCAR', prefix='wfc',
+               lgam=False, lreal=False, lchg=False, ncol=10):
     '''
     Save the real space pseudo-wavefunction as vesta format.
     '''
@@ -52,6 +52,15 @@ def save2vesta(phi=None, poscar='POSCAR', prefix='wfc',
                            for row in psi_h.imag])
             )
             out.write("\n" + ''.join([fmt % xx for xx in psi_r.imag]))
+
+    if lchg:
+        with open(prefix + '_chg.vasp', 'w') as out:
+            out.write(head)
+            out.write(
+                '\n'.join([''.join([fmt % xx for xx in row])
+                           for row in (psi_h.real**2 + psi_h.imag**2)])
+            )
+            out.write("\n" + ''.join([fmt % xx for xx in (psi_r.real**2 + psi_r.imag**2)]))
 
 ############################################################
 
@@ -98,7 +107,7 @@ class vaspwfc(object):
         self._lsoc  = lsorbit
         self._lgam  = lgamma
         self._gam_half = gamma_half.lower()
-        
+
         # It seems that some modules in scipy uses OPENMP, it is therefore
         # desirable to set the OMP_NUM_THREADS to tune the parallization.
         os.environ['OMP_NUM_THREADS'] = str(omp_num_threads)
@@ -116,7 +125,7 @@ class vaspwfc(object):
         self.readWFHeader()
         # read the band information
         self.readWFBand()
-        
+
         if self._lsoc:
             assert self._nspin == 1, "NSPIN = 1 for noncollinear version WAVECAR!"
 
@@ -173,7 +182,7 @@ class vaspwfc(object):
                 sqrt(self._encut / RYTOEV) / (TPI / (Anorm / AUTOA))
         )
         self._ngrid = np.array(2 * CUTOF + 1, dtype=int)
-        
+
     def setWFPrec(self):
         '''
         Set wavefunction coefficients precision:
@@ -325,7 +334,7 @@ class vaspwfc(object):
 
         return np.asarray(Gvec, dtype=int)
 
-    def save2vesta(self, phi=None, lreal=False, poscar='POSCAR', prefix='wfc',
+    def save2vesta(self, phi=None, lreal=False, lchg=False, poscar='POSCAR', prefix='wfc',
                    ncol=10):
         '''
         Save the real space pseudo-wavefunction as vesta format.
@@ -368,6 +377,15 @@ class vaspwfc(object):
                                for row in psi_h.imag])
                 )
                 out.write("\n" + ''.join([fmt % xx for xx in psi_r.imag]))
+        if lchg:
+            with open(prefix + '_chg.vasp', 'w') as out:
+                out.write(head)
+                out.write(
+                    '\n'.join([''.join([fmt % xx for xx in row])
+                               for row in (psi_h.real**2 + psi_h.imag**2)])
+                )
+                out.write("\n" + ''.join([fmt % xx for xx in (psi_r.real**2 + psi_r.imag**2)]))
+
 
     def wfc_r(self, ispin=1, ikpt=1, iband=1,
                     gvec=None, Cg=None, ngrid=None,
@@ -392,7 +410,7 @@ class vaspwfc(object):
         The return wavefunctions are normalized in a way that
 
                         \sum_{ijk} | \phi_{ijk} | ^ 2 = 1
-            
+
         '''
         self.checkIndex(ispin, ikpt, iband)
 
@@ -411,9 +429,9 @@ class vaspwfc(object):
         # "ortho" (default is None) so that both direct and inverse transforms
         # will be scaled by 1/\sqrt{n}.
 
-        # default normalization factor so that 
+        # default normalization factor so that
         # \sum_{ijk} | \phi_{ijk} | ^ 2 = 1
-        normFac = rescale if rescale is not None else np.sqrt(np.prod(ngrid)) 
+        normFac = rescale if rescale is not None else np.sqrt(np.prod(ngrid))
 
         if gvec is None:
             gvec = self.gvectors(ikpt)
@@ -427,7 +445,7 @@ class vaspwfc(object):
             phi_k = np.zeros(ngrid, dtype=np.complex128)
 
         gvec %= ngrid[np.newaxis,:]
-        
+
         if self._lsoc:
             wfc_spinor = []
             if Cg:
@@ -435,7 +453,7 @@ class vaspwfc(object):
             else:
                 dump = self.readBandCoeff(ispin, ikpt, iband, norm)
             nplw = dump.shape[0] / 2
-            
+
             # spinor up
             phi_k[gvec[:,0], gvec[:,1], gvec[:,2]] = dump[:nplw]
             wfc_spinor.append(ifftn(phi_k) * normFac)
@@ -446,7 +464,7 @@ class vaspwfc(object):
 
             del dump
             return wfc_spinor
-            
+
         else:
             if Cg is not None:
                 phi_k[gvec[:,0], gvec[:,1], gvec[:,2]] = Cg
@@ -523,7 +541,7 @@ class vaspwfc(object):
         assert 1 <= ikpt  <= self._nkpts,  'Invalid kpoint index!'
         assert 1 <= iband <= self._nbands, 'Invalid band index!'
 
-    def TransitionDipoleMoment(self, ks_i, ks_j, norm=True, 
+    def TransitionDipoleMoment(self, ks_i, ks_j, norm=True,
                                      realspace=False):
         '''
         calculate Transition Dipole Moment (TDM) between two KS states.
@@ -536,17 +554,17 @@ class vaspwfc(object):
         <psi_a | r | psi_b> =  -------------- ⋅ <psi_a | p | psi_b>
                                 m⋅(Eb - Ea)
 
-                                      2        ____              
-                                     h          ╲                
+                                      2        ____
+                                     h          ╲
                             =  ------------- ⋅   ╲   Cai⋅Cbi⋅Gi
-                                m⋅(Eb - Ea)      ╱               
-                                                ╱                
-                                               ‾‾‾‾              
-                                                 i               
+                                m⋅(Eb - Ea)      ╱
+                                                ╱
+                                               ‾‾‾‾
+                                                 i
 
         Otherwise, the TDM will be evaluated in real space.
 
-        Note: |psi_a> and |psi_b> should be bloch function with 
+        Note: |psi_a> and |psi_b> should be bloch function with
               the same k vector.
 
         The KS states ks_i (ks_j) is specified by list of index (ispin, ikpt, iband).
@@ -608,8 +626,8 @@ class vaspwfc(object):
         Calculate Inverse Paticipation Ratio (IPR) from the wavefunction. IPR is
         a measure of the localization of Kohn-Sham states. For a particular KS
         state \phi_j, it is defined as
-            
-                            \sum_n |\phi_j(n)|^4 
+
+                            \sum_n |\phi_j(n)|^4
             IPR(\phi_j) = -------------------------
                           |\sum_n |\phi_j(n)|^2||^2
 
@@ -709,17 +727,17 @@ class vaspwfc(object):
         fz = [kk if kk < ngrid[2] / 2 + 1 else kk - ngrid[2]
                 for kk in range(ngrid[2])]
 
-        # plane-waves: Reciprocal coordinate 
+        # plane-waves: Reciprocal coordinate
         # indexing = 'ij' so that outputs are of shape (ngrid[0], ngrid[1], ngrid[2])
         Dx, Dy, Dz = np.meshgrid(fx, fy, fz, indexing='ij')
-        # plane-waves: Cartesian coordinate 
+        # plane-waves: Cartesian coordinate
         Gx, Gy, Gz = np.tensordot(self._Bcell * np.pi * 2, [Dx, Dy, Dz], axes=(0,0))
         # the norm squared of the G-vectors
         G2 = Gx**2 + Gy**2 + Gz**2
         # k-points vectors in Cartesian coordinate
         vkpts = np.dot(self._kvecs, self._Bcell * 2 * np.pi)
 
-        # normalization factor so that 
+        # normalization factor so that
         # \sum_{ijk} | \phi_{ijk} | ^ 2 * volume / Ngrid = 1
         normFac = np.sqrt(np.prod(ngrid) / self._Omega)
 
@@ -822,14 +840,14 @@ class vaspwfc(object):
 
             # charge density gradient: grad rho
             ########################################
-            # wrong method for gradient using FFT 
+            # wrong method for gradient using FFT
             ########################################
             # grad_rho_x = np.fft.ifft(1j * Gx * np.fft.fft(rho, axis=0), axis=0)
             # grad_rho_y = np.fft.ifft(1j * Gy * np.fft.fft(rho, axis=1), axis=1)
             # grad_rho_z = np.fft.ifft(1j * Gz * np.fft.fft(rho, axis=2), axis=2)
 
             ########################################
-            # correct method for gradient using FFT 
+            # correct method for gradient using FFT
             ########################################
             grad_rho_x = np.fft.ifftn(1j * Gx * rho_q, norm='ortho')
             grad_rho_y = np.fft.ifftn(1j * Gy * rho_q, norm='ortho')
@@ -853,7 +871,7 @@ class vaspwfc(object):
             D0 = tau + 0.5 * lap_rho_r - 0.25 * grad_rho_sq / rho
 
             ElectronLocalizationFunction.append(1. / (1. + (D0 / Dh)**2))
-        
+
         return ElectronLocalizationFunction
 
 ############################################################
@@ -922,7 +940,7 @@ if __name__ == '__main__':
     # fig = plt.figure()
     # ax = plt.subplot()
     #
-    # ax.scatter(ipr[...,0], ipr[..., 1], s=ipr[..., 2] / ipr[..., 2].max() * 10, c=ipr[..., 2], 
+    # ax.scatter(ipr[...,0], ipr[..., 1], s=ipr[..., 2] / ipr[..., 2].max() * 10, c=ipr[..., 2],
     #            cmap='jet_r')
     #
     # plt.show()
