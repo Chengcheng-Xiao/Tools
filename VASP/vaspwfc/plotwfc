@@ -86,7 +86,10 @@ elif prm.lelf == False:
         else:
             wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
     elif prm.lsorbit == True:
-        wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
+        if prm.lchg == True:
+            print "\n** ERROR: charge plot does not support SOC."
+        else:
+            wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
     else:
         print "\n** ERROR: something wrong."
         sys.exit(0)
