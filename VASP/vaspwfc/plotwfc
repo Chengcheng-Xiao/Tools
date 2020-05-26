@@ -82,7 +82,6 @@ if prm.lelf == True:
 elif prm.lelf == False:
     if prm.lsorbit == False:
         if prm.lchg == True:
-            print 'te'
             wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR, lchg=True)
         else:
             wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)

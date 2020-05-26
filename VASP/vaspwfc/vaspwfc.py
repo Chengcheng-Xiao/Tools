@@ -37,23 +37,23 @@ def save2vesta(phi=None, poscar='POSCAR', prefix='wfc',
     psi_h = psi[:nrow * ncol].reshape((nrow, ncol))
     psi_r = psi[nrow * ncol:]
 
-    with open(prefix + '_r.vasp', 'w') as out:
-        out.write(head)
-        out.write(
-            '\n'.join([''.join([fmt % xx for xx in row])
-                       for row in psi_h.real])
-        )
-        out.write("\n" + ''.join([fmt % xx for xx in psi_r.real]))
-    if not (lgam or lreal):
-        with open(prefix + '_i.vasp', 'w') as out:
+    if not lchg:
+        with open(prefix + '_r.vasp', 'w') as out:
             out.write(head)
             out.write(
                 '\n'.join([''.join([fmt % xx for xx in row])
-                           for row in psi_h.imag])
+                           for row in psi_h.real])
             )
-            out.write("\n" + ''.join([fmt % xx for xx in psi_r.imag]))
-
-    if lchg:
+            out.write("\n" + ''.join([fmt % xx for xx in psi_r.real]))
+        if not (lgam or lreal):
+            with open(prefix + '_i.vasp', 'w') as out:
+                out.write(head)
+                out.write(
+                    '\n'.join([''.join([fmt % xx for xx in row])
+                               for row in psi_h.imag])
+                )
+                out.write("\n" + ''.join([fmt % xx for xx in psi_r.imag]))
+    else:
         with open(prefix + '_chg.vasp', 'w') as out:
             out.write(head)
             out.write(
@@ -362,22 +362,23 @@ class vaspwfc(object):
         psi_h = psi[:nrow * ncol].reshape((nrow, ncol))
         psi_r = psi[nrow * ncol:]
 
-        with open(prefix + '_r.vasp', 'w') as out:
-            out.write(head)
-            out.write(
-                '\n'.join([''.join([fmt % xx for xx in row])
-                           for row in psi_h.real])
-            )
-            out.write("\n" + ''.join([fmt % xx for xx in psi_r.real]))
-        if not (self._lgam or lreal):
-            with open(prefix + '_i.vasp', 'w') as out:
+        if not lchg:
+            with open(prefix + '_r.vasp', 'w') as out:
                 out.write(head)
                 out.write(
                     '\n'.join([''.join([fmt % xx for xx in row])
-                               for row in psi_h.imag])
+                               for row in psi_h.real])
                 )
-                out.write("\n" + ''.join([fmt % xx for xx in psi_r.imag]))
-        if lchg:
+                out.write("\n" + ''.join([fmt % xx for xx in psi_r.real]))
+            if not (self._lgam or lreal):
+                with open(prefix + '_i.vasp', 'w') as out:
+                    out.write(head)
+                    out.write(
+                        '\n'.join([''.join([fmt % xx for xx in row])
+                                   for row in psi_h.imag])
+                    )
+                    out.write("\n" + ''.join([fmt % xx for xx in psi_r.imag]))
+        else:
             with open(prefix + '_chg.vasp', 'w') as out:
                 out.write(head)
                 out.write(
