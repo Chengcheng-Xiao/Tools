@@ -12,29 +12,47 @@ import math
 import string
 import datetime
 import time
+import argparse
 from ase.calculators.vasp import VaspChargeDensity
+from scipy import interpolate
+
+# Command line praser
+#----------------------------
+parser = argparse.ArgumentParser(description='A script to calculate planar and macroscopic average along certain axis.')
+parser.add_argument('-c','--pot', action="store", default="LOCPOT", dest="LOCPOT",
+                    help='Input file name.')
+parser.add_argument('-d', action="store", default="z", dest="dir",
+                    help='direction(Default=Z)')
+parser.add_argument('-macro', action="store_true", default=False, dest="macro",
+                    help='macroscopic average? (Default=False). \
+                    Will print out intrpolated planar and macro average. ')
+parser.add_argument('--len', action="store", default="0.1", type=np.float, dest="macro_len",
+                    help='atomic plane length. (in $\AA$)')
+
+prm = parser.parse_args()
+
 
 starttime = time.clock()
 print "Starting calculation at",
 print time.strftime("%H:%M:%S on %a %d %b %Y")
 
-if len(sys.argv) != 3:
-    print "\n** ERROR: Must specify name of file and direction on command line."
-    print "eg. vtotav.py LOCPOT z."
-    sys.exit(0)
+# if len(sys.argv) != 3:
+#     print "\n** ERROR: Must specify name of file and direction on command line."
+#     print "eg. vtotav.py LOCPOT z."
+#     sys.exit(0)
 
-if not os.path.isfile(sys.argv[1]):
-    print "\n** ERROR: Input file %s was not found." % sys.argv[1]
+if not os.path.isfile(prm.LOCPOT):
+    print "\n** ERROR: Input file %s was not found." % prm.LOCPOT
     sys.exit(0)
 
 # Read information from command line
 # First specify location of LOCPOT
-LOCPOTfile = sys.argv[1].lstrip()
+LOCPOTfile = prm.LOCPOT.lstrip()
 
 # Next the direction to make average in
 # input should be x y z, or X Y Z. Default is Z.
 allowed = "xyzXYZ"
-direction = sys.argv[2].lstrip()
+direction = prm.dir.lstrip()
 if allowed.find(direction) == -1 or len(direction)!=1 :
     print "** WARNING: The direction was input incorrectly."
     print "** Setting to z-direction by default."
@@ -114,6 +132,80 @@ else:
     dA = area/(ngridpts[a]*ngridpts[b])
     average *= dA
 
+if prm.macro == True:
+    average_m = np.zeros(ngridpts[idir]*50,np.float)
+    interval = prm.macro_len
+    dr = np.sqrt((cell[idir]**2).sum())/ngridpts[idir]
+    dr_interp = dr/50.
+    number = np.floor(np.round(interval/dr)/2)
+    number_interp = np.floor(np.round(interval/dr_interp)/2)
+
+    # linear interpolate (50X dense)
+    #-------------------
+    # x = np.linspace(0, dr*(ngridpts[idir]+1), ngridpts[idir], endpoint=False)
+    # y = average
+    # xvals = np.linspace(0, dr*(ngridpts[idir]+1), ngridpts[idir]*50, endpoint=False)
+    # average_interp = np.interp(xvals, x, y)
+
+    # cubic spline (50X dense)
+    #-------------------
+    x = np.linspace(0, dr*(ngridpts[idir]+1), ngridpts[idir], endpoint=False)
+    y = average
+    tck = interpolate.splrep(x, y, s=0)
+    xvals = np.linspace(0, dr*(ngridpts[idir]+1), ngridpts[idir]*50, endpoint=False)
+    average_interp = interpolate.splev(xvals, tck, der=0)
+
+    # another cubic spline (50X dense)
+    #-------------------
+    # x = np.linspace(0, dr*(ngridpts[idir]+1), ngridpts[idir], endpoint=False)
+    # y = average
+    # tck = interpolate.interp1d(x, y, kind='cubic')
+    # xvals = np.linspace(0, dr*(ngridpts[idir]), ngridpts[idir]*50, endpoint=False)
+    # average_interp = tck(xvals)
+
+
+    for ipt in range(ngridpts[idir]*50):
+        average_m[ipt] = np.array([average_interp[i%(ngridpts[idir]*50)] \
+        for i in np.array(np.arange(ipt-number_interp,ipt+number_interp+1,1),dtype=np.int)]).sum()
+
+    # original no interpolation method
+    #-------------------
+    # for ipt in range(ngridpts[idir]):
+    #     average_m[ipt] = np.array([average[i%ngridpts[idir]] \
+    #     for i in np.array(np.arange(ipt-number,ipt+number+1,1),dtype=np.int)]).sum()
+    #     print [i%ngridpts[idir] \
+    #     for i in np.array(np.arange(ipt-number,ipt+number+1,1),dtype=np.int)]
+
+    # # interpolate again?
+    #-------------------
+    # for ii in range(1):
+    #     average_mm = np.zeros(ngridpts[idir]*50,np.float)
+    #     for ipt in range(ngridpts[idir]*50):
+    #         average_mm[ipt] = np.array([average_m[i%(ngridpts[idir]*50)] \
+    #         for i in np.array(np.arange(ipt-number_interp,ipt+number_interp,1),dtype=np.int)]).sum()
+    #     average_m = average_mm/(2*number_interp+1)
+
+    average = average_m /(2*number_interp+1)
+
+# Print out average macro
+#-------------------
+if prm.macro == True:
+    averagefile = LOCPOTfile + filesuffix + '_macro'
+    print "Writing macroscopic averaged data to file %s..." % averagefile,
+    sys.stdout.flush()
+    outputfile = open(averagefile,"w")
+    if 'LOCPOT' in LOCPOTfile:
+        outputfile.write("#  Distance(Ang)     Potential(eV)\n")
+    else:
+        outputfile.write("#  Distance(Ang)     Chg. density (e/Ang)\n")
+    # (50X dense)
+    xdiff = latticelength[idir]/float(ngridpts[idir]*50)
+    for i in range(ngridpts[idir]*50):
+        x = i*xdiff
+        outputfile.write("%15.8g %15.8g\n" % (x,average[i]))
+    outputfile.close()
+    print "done."
+
 # Print out average
 #-------------------
 averagefile = LOCPOTfile + filesuffix
@@ -124,12 +216,20 @@ if 'LOCPOT' in LOCPOTfile:
     outputfile.write("#  Distance(Ang)     Potential(eV)\n")
 else:
     outputfile.write("#  Distance(Ang)     Chg. density (e/Ang)\n")
-xdiff = latticelength[idir]/float(ngridpts[idir])
-for i in range(ngridpts[idir]):
-    x = i*xdiff
-    outputfile.write("%15.8g %15.8g\n" % (x,average[i]))
+if prm.macro == True:
+    # (50X dense)
+    xdiff = latticelength[idir]/float(ngridpts[idir]*50)
+    for i in range(ngridpts[idir]*50):
+        x = i*xdiff
+        outputfile.write("%15.8g %15.8g\n" % (x,average_interp[i]))
+else:
+    xdiff = latticelength[idir]/float(ngridpts[idir])
+    for i in range(ngridpts[idir]):
+        x = i*xdiff
+        outputfile.write("%15.8g %15.8g\n" % (x,average[i]))
 outputfile.close()
 print "done."
+
 
 endtime = time.clock()
 runtime = endtime-starttime

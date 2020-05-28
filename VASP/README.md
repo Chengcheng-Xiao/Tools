@@ -68,10 +68,16 @@ view_atoms.py POSCAR
   - LOCPOT
 - Output:
   - LOCPOT_*
+- Option:
+  - `-macro --len DISTANCE` for macroscopic average
+- Optional output:
+  - `LOCPOT_*` interpolated planar average
+  - `LOCPOT_*_macro` macroscopic average
 - Usage:
 ```
-vtotav.py LOCPOT z
+vtotav.py -c LOCPOT -dir z -macro --len 5.0
 ```
+
 
 ### plotwfc
 *use vaspwfc from [QijingZheng/VaspBandUnfolding](https://github.com/QijingZheng/VaspBandUnfolding/blob/master/vaspwfc.py).*
@@ -80,6 +86,9 @@ vtotav.py LOCPOT z
   - POSCAR
 - Output:
   - `WAV.*.vasp`
+- Option:
+  - `-soc` spinor wavefunction.
+  - `-chg` output charge density, doesn't work with `-soc`
 - Usage:
 ```
 plotwfc -b 12 -k 1 -s 1 --soc
