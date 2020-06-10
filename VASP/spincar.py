@@ -74,7 +74,7 @@ elif len(vasp_charge.chgdiff) == 1:
         potl_up = (potl_updown+potl_upmdown)/2
         potl_down = (potl_updown-potl_upmdown)/2
 
-elif len(vasp_charge.chgidff) == 0:
+elif len(vasp_charge.chgdiff) == 0:
     spin=1
     print "\nReading spin paired potential data from file %s ... \n" % CHGCARfile,
     print "File only contains one block of data, check if is polarized calculation."

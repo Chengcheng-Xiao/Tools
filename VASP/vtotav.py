@@ -19,8 +19,10 @@ from scipy import interpolate
 # Command line praser
 #----------------------------
 parser = argparse.ArgumentParser(description='A script to calculate planar and macroscopic average along certain axis.')
-parser.add_argument('-c','--pot', action="store", default="LOCPOT", dest="LOCPOT",
+parser.add_argument('-c', action="store", default="LOCPOT", dest="LOCPOT",
                     help='Input file name.')
+parser.add_argument('-chg','--chg', action="store_true", default=False, dest="chg",
+                    help='Is density quantity? (Default=False)')
 parser.add_argument('-d', action="store", default="z", dest="dir",
                     help='direction(Default=Z)')
 parser.add_argument('-macro', action="store_true", default=False, dest="macro",
@@ -119,7 +121,8 @@ for ipt in range(ngridpts[idir]):
     else:
         average[ipt] = potl[:,:,ipt].sum()
 
-if 'LOCPOT' in LOCPOTfile:
+# if 'LOCPOT' in LOCPOTfile:
+if not prm.chg:
     # Scale by number of grid points in the plane.
     # The resulting unit will be eV.
     average /= ngridpts[a]*ngridpts[b]
