@@ -1,5 +1,9 @@
 ## Usage
+
+pre-requisites: [`ASE`](https://wiki.fysik.dtu.dk/ase/)
+
 ### chgcent.py
+Calculate charge electron and ion charge centers.
 - Read:
   - CHGCAR
   - OUTCAR
@@ -14,6 +18,7 @@ chgcent.py CHGCAR OUTCAR
 ```
 
 ### chgdiff.py
+Calculate differential charge density. `CHGDIFF = CHG1 - CHG2`
 - Read:
   - CHGCAR
 - Output:
@@ -24,6 +29,7 @@ chgdiff.py CHGCAR1 CHGCAR2
 ```
 
 ### impose_sym.py
+Find, print and impose symmetry to POSCAR.
 - Read:
   - POSCAR
 - Output:
@@ -34,6 +40,7 @@ impose_sym.py -c POSCAR -s 0.1
 ```
 
 ### p4vmod.py
+Convert different naming conventions from v541 to v544 for `vasprun.xml`.
 - Read:
   - vasprun.xml
 - Output:
@@ -44,6 +51,7 @@ p4vmod.py vasprun.xml
 ```
 
 ### spincar.py
+Calculate spin densities.
 - Read:
   - CHGCAR
 - Output:
@@ -54,6 +62,7 @@ spincar.py CHGCAR
 ```
 
 ### view_atoms.py
+Quickly plot geometry with GUI from command line, light weight.
 - Read:
   - POSCAR
 - Output:
@@ -64,6 +73,7 @@ view_atoms.py POSCAR
 ```
 
 ### vtotav.py
+Calculate planar average and macroscopic average for density files.
 - Read:
   - LOCPOT
 - Output:
@@ -81,6 +91,7 @@ vtotav.py -c LOCPOT -dir z -macro --len 5.0
 
 ### plotwfc
 *use vaspwfc from [QijingZheng/VaspBandUnfolding](https://github.com/QijingZheng/VaspBandUnfolding/blob/master/vaspwfc.py).*
+Plot Bloch wavefunctions.
 - Read:
   - WAVECAR
   - POSCAR
@@ -95,6 +106,7 @@ plotwfc -b 12 -k 1 -s 1 --soc
 ```
 
 ### cell_tool.py
+Make supercells, measure bond length on the fly.
 - Read:
   - POSCAR/CONTCAR
 - Output:
@@ -103,11 +115,11 @@ plotwfc -b 12 -k 1 -s 1 --soc
 - Usage:
 ```
 cell_tool.py -d --dim '1 2 1' -v -di --dis '0 1'
-
 cell_tool.py -d --dim '1 2 0 0 1 0 0 0 1' -v
 ```
 
 ### get_pp.py
+Generate pseudopotential(POTCAR) file by combining different POTCAR files.
 - Read:
   - POSCAR
 - Output:
@@ -115,7 +127,5 @@ cell_tool.py -d --dim '1 2 0 0 1 0 0 0 1' -v
 - Usage:
 ```
 get_pp.py -c "POSCAR" -o -s "manual"
-
 get_pp.py -i "Au Fe" -o -s "recommended" -xc "LDA"
-
 ```
