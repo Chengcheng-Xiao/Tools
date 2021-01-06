@@ -129,3 +129,14 @@ Generate pseudopotential(POTCAR) file by combining different POTCAR files.
 get_pp.py -c "POSCAR" -o -s "manual"
 get_pp.py -i "Au Fe" -o -s "recommended" -xc "LDA"
 ```
+
+### kp_gen.py
+generate KPOINTS file.
+- Read:
+  - POSCAR
+- Output:
+  - KPOINTS_k_path
+- Usage:
+```
+kp_gen.py -c POSCAR -r 0.1
+```
