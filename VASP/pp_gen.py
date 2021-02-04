@@ -224,7 +224,7 @@ if prm.xc == "PBE":
         "N"  : ["N","N_h","N_s"],
         "Na" : ["Na_pv","Na","Na_sv"],
         "Nb" : ["Nb_sv","Nb_pv"],
-        "Nd" : ["Nd_3""Nd"],
+        "Nd" : ["Nd_3","Nd"],
         "Ne" : ["Ne"],
         "Ni" : ["Ni","Ni_pv"],
         "Np" : ["Np","Np_s"],
