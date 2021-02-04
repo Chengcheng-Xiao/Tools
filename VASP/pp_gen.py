@@ -25,7 +25,7 @@ parser.add_argument('-c','--POSCAR', action="store", default="POSCAR", dest="POS
 parser.add_argument('-i', action="store", default=None, dest="atom_list",
                     help='atom list (Default=None)')
 parser.add_argument('-s', action="store", default="recommended", dest="setup",
-                    help='setup (minimal | recommended) | materialsproject | gw )')
+                    help='setup (minimal | recommended | materialsproject | gw | manual)')
 parser.add_argument('-xc', action="store", default="PBE", dest="xc",
                     help='setup (PBE | LDA)')
 
@@ -71,7 +71,7 @@ if prm.prt == True:
 #----------------------------
 if prm.xc == "PBE":
     PP_dir = os.environ.get("VASP_PP_PATH")+"/potpaw_PBE/"
-    minima = {
+    minimal = {
         "Ac" : ["Ac"],
         "Ag" : ["Ag","Ag_pv"],
         "Al" : ["Al"],
@@ -348,7 +348,7 @@ if prm.xc == "PBE":
     }
 elif prm.xc == "LDA":
     PP_dir = os.environ.get("VASP_PP_PATH")+"/potpaw/"
-    minima = {
+    minimal = {
         "Ac" : ["Ac"],
         "Ag" : ["Ag","Ag_pv"],
         "Al" : ["Al"],
