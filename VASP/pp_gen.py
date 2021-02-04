@@ -167,7 +167,8 @@ if prm.xc == "PBE":
         "Xe" : ["Xe"],
         "Y"  : ["Y_sv"],
         "Yb" : ["Yb","Yb_2","Yb_3"],
-        "Zn" : ["Zn","Zr_sv"],
+        "Zn" : ["Zn"],
+        "Zr" : ["Zr_sv"]
     }
 
     #https://cms.mpi.univie.ac.at/vasp/vasp/Recommended_PAW_potentials_DFT_calculations_using_vasp_5_2.html
@@ -267,7 +268,8 @@ if prm.xc == "PBE":
         "Xe" : ["Xe"],
         "Y"  : ["Y_sv"],
         "Yb" : ["Yb_2","Yb","Yb_3"],
-        "Zn" : ["Zr_sv","Zn"]
+        "Zn" : ["Zn"],
+        "Zr" : ["Zr_sv"]
     }
     gw = {
         "Ag" : ["Ag_sv_GW","Ag_GW"],
@@ -341,7 +343,8 @@ if prm.xc == "PBE":
         "W"  : ["W_sv_GW"],
         "Xe" : ["Xe_GW","Xe_sv_GW"],
         "Y"  : ["Y_sv_GW"],
-        "Zn" : ["Zn_sv_GW","Zn_GW","Zr_sv_GW"]
+        "Zn" : ["Zn_sv_GW","Zn_GW"],
+        "Zr" : ["Zr_sv_GW"]
     }
 elif prm.xc == "LDA":
     PP_dir = os.environ.get("VASP_PP_PATH")+"/potpaw/"
@@ -427,7 +430,8 @@ elif prm.xc == "LDA":
         "W"  : ["W","W_pv","W_sv"],
         "Xe" : ["Xe"],
         "Y"  : ["Y_sv"],
-        "Zn" : ["Zn","Zr_sv"],
+        "Zn" : ["Zn"],
+        "Zr" : ["Zr_sv"]
     }
 
     #https://cms.mpi.univie.ac.at/vasp/vasp/Recommended_PAW_potentials_DFT_calculations_using_vasp_5_2.html
@@ -513,7 +517,8 @@ elif prm.xc == "LDA":
         "W"  : ["W_sv","W","W_pv"],
         "Xe" : ["Xe"],
         "Y"  : ["Y_sv"],
-        "Zn" : ["Zr_sv","Zn"]
+        "Zn" : ["Zn"],
+        "Zr" : ["Zr_sv"]
     }
     gw = {
         "Ag" : ["Ag_sv_GW","Ag_GW"],
@@ -587,7 +592,8 @@ elif prm.xc == "LDA":
         "W"  : ["W_sv_GW"],
         "Xe" : ["Xe_GW","Xe_sv_GW"],
         "Y"  : ["Y_sv_GW"],
-        "Zn" : ["Zn_sv_GW","Zn_GW","Zr_sv_GW"]
+        "Zn" : ["Zn_sv_GW","Zn_GW"],
+        "Zr" : ["Zr_sv_GW"]
     }
 
 file_list = []
