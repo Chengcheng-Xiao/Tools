@@ -14,7 +14,7 @@ import datetime
 import time
 
 # Command line praser
-#----------------------------
+#--------------------
 parser = argparse.ArgumentParser(description='A script to make supercell(transformed supercell) and measure atomic distances.')
 parser.add_argument('-v', '--verbose', action="store_false", default=True, dest="prt",
                     help='print out info? (Default=False)')
@@ -32,7 +32,7 @@ parser.add_argument('-xc', action="store", default="PBE", dest="xc",
 prm = parser.parse_args()
 
 # Starting
-#----------------------------
+#---------
 if prm.prt == True:
     starttime = time.clock()
     print "Starting at",
@@ -68,7 +68,7 @@ if prm.prt == True:
     print "input setup:        %s " % prm.setup
 
 # Dictionary containing all data
-#----------------------------
+#-------------------------------
 if prm.xc == "PBE":
     PP_dir = os.environ.get("VASP_PP_PATH")+"/potpaw_PBE/"
     minimal = {
@@ -346,6 +346,106 @@ if prm.xc == "PBE":
         "Zn" : ["Zn_sv_GW","Zn_GW"],
         "Zr" : ["Zr_sv_GW"]
     }
+    materialsproject = {
+        "Ac" : ["Ac"],
+        "Ag" : ["Ag"],
+        "Al" : ["Al"],
+        "Am" : ["Am"],
+        "Ar" : [],
+        "As" : ["As"],
+        "At" : ["At_d"],
+        "Au" : ["Au"],
+        "B"  : ["B"],
+        "Ba" : ["Ba_sv"],
+        "Be" : ["Be_sv"],
+        "Bi" : ["Bi_d"],
+        "Br" : ["Br"],
+        "C"  : ["C"],
+        "Ca" : ["Ca_sv"],
+        "Cd" : ["Cd"],
+        "Ce" : ["Ce"],
+        "Cf" : [],
+        "Cl" : ["Cl"],
+        "Cm" : [],
+        "Co" : ["Co"],
+        "Cr" : ["Cr_pv"],
+        "Cs" : ["Cs_sv"],
+        "Cu" : ["Cu_pv"],
+        "Dy" : ["Dy_3"],
+        "Er" : ["Er_3"],
+        "Eu" : ["Eu"],
+        "F"  : ["F"],
+        "Fe" : ["Fe_pv"],
+        "Fr" : [],
+        "Ga" : ["Ga_d"],
+        "Gd" : ["Gd"],
+        "Ge" : ["Ge_d"],
+        "H"  : ["H"],
+        "He" : ["He"],
+        "Hf" : ["Hf_pv"],
+        "Hg" : ["Hg"],
+        "Ho" : ["Ho_3"],
+        "I"  : [],
+        "In" : ["In_d"],
+        "Ir" : ["Ir"],
+        "K"  : ["K_sv"],
+        "Kr" : [],
+        "La" : ["La"],
+        "Li" : ["Li_sv"],
+        "Lu" : ["Lu_3"],
+        "Mg" : ["Mg_pv"],
+        "Mn" : ["Mn_pv"],
+        "Mo" : ["Mo_pv"],
+        "N"  : ["N"],
+        "Na" : ["Na_pv"],
+        "Nb" : ["Nb_pv"],
+        "Nd" : ["Nd_3"],
+        "Ne" : [],
+        "Ni" : ["Ni_pv"],
+        "Np" : ["Np"],
+        "O"  : ["O"],
+        "Os" : ["Os_pv"],
+        "P"  : ["P"],
+        "Pa" : ["Pa"],
+        "Pb" : ["Pb_d"],
+        "Pd" : ["Pd"],
+        "Pm" : ["Pm_3"],
+        "Po" : ["Po"],
+        "Pr" : ["Pr_3"],
+        "Pt" : ["Pt"],
+        "Pu" : ["Pu"],
+        "Ra" : [],
+        "Rb" : ["Rb_sv"],
+        "Re" : ["Re_pv"],
+        "Rh" : ["Rh_pv"],
+        "Rn" : [],
+        "Ru" : ["Ru_pv"],
+        "S"  : ["S"],
+        "Sb" : [],
+        "Sc" : ["Sc_sv"],
+        "Se" : ["Se"],
+        "Si" : ["Si"],
+        "Sm" : ["Sm_3"],
+        "Sn" : ["Sn_d"],
+        "Sr" : ["Sr_sv"],
+        "Ta" : ["Ta_pv"],
+        "Tb" : ["Tb_3"],
+        "Tc" : ["Tc_pv"],
+        "Te" : [],
+        "Th" : ["Th"],
+        "Ti" : ["Ti_pv"],
+        "Tl" : ["Tl_d"],
+        "Tm" : ["Tm_3"],
+        "U"  : ["U"],
+        "V"  : ["V_sv"],
+        "W"  : ["W_pv"],
+        "Xe" : [],
+        "Y"  : ["Y_sv"],
+        "Yb" : ["Yb"],
+        "Zn" : ["Zn"],
+        "Zr" : ["Zr_sv"]
+    }
+
 elif prm.xc == "LDA":
     PP_dir = os.environ.get("VASP_PP_PATH")+"/potpaw/"
     minimal = {
@@ -596,6 +696,8 @@ elif prm.xc == "LDA":
         "Zr" : ["Zr_sv_GW"]
     }
 
+# construct a list of POTCAR names
+#---------------------------------
 file_list = []
 if prm.setup == "recommended":
     for i in atom_list:
@@ -607,10 +709,23 @@ elif prm.setup == "gw":
     for i in atom_list:
         file_list.append(gw[i][0])
 elif prm.setup == "materialsproject":
-    sys.stdout.write("\033[1;31m" ) # set color red
-    print "\n** ERROR: Not implemented yet."
-    sys.stdout.write("\033[0;0m") # reset color
-    sys.exit(0)
+    if prm.xc == "PBE":
+        for i in atom_list:
+            if len(materialsproject[i]) == 0:
+                sys.stdout.write("\033[1;31m" ) # set color red
+                print "\n** ERROR: Not implemented. Choose from below:"
+                sys.stdout.write("\033[0;0m") # reset color
+                print i+": ",recommended[i]
+                inputstr = raw_input("--->>>:")
+                file_list.append(inputstr)
+            else:
+                file_list.append(materialsproject[i][0])
+    elif prm.xc == "LDA":
+        sys.stdout.write("\033[1;31m" ) # set color red
+        print "\n** ERROR: materialsproject option not implemented with LDA."
+        print "\n          use PBE instead."
+        sys.stdout.write("\033[0;0m") # reset color
+        sys.exit(0)
 elif prm.setup == "manual":
     for i in atom_list:
         print i+": ",recommended[i]
@@ -623,7 +738,7 @@ else:
     sys.exit(0)
 
 # Combine file_list
-#----------------------------
+#------------------
 if prm.over == True or prm.over == False and os.path.exists("POTCAR") == False:
     with open('POTCAR', 'w+') as outfile:
         for fname in file_list:
@@ -640,8 +755,9 @@ elif prm.over == False and os.path.exists("POTCAR") == True:
 
 if prm.prt == True:
     # Post process
-    #----------------------------
+    #-------------
     endtime = time.clock()
     runtime = endtime-starttime
-    print "\nEnd."
+    print "\nFinished."
     print "Program was running for %.2f seconds." % runtime
+
