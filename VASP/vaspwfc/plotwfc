@@ -19,6 +19,8 @@ parser.add_argument('-soc', '-ncl',action="store_true", default=False, dest='lso
                     help='is spinor WAVECAR?. (Default=False)')
 parser.add_argument('-s', action="store", default=1, type=int, dest="ispin",
                     help='spin component (Default=1; 1->up, 2->down, 3->both)')
+parser.add_argument('-ssoc', action="store", default=1, type=int, dest="ispinsoc",
+                    help='spin component (Default=1; 1->up, 2->down, 3->both)')
 parser.add_argument('-b', action="store", default=1, type=int, dest="iband",
                     help='band number (Default=1)')
 parser.add_argument('-k', action="store", default=1, type=int, dest="ikpt",
@@ -89,7 +91,9 @@ elif prm.lelf == False:
         if prm.lchg == True:
             print "\n** ERROR: charge plot does not support SOC."
         else:
-            wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
+#            wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
+            print "spin component:",prm.ispinsoc
+            wav.save2vesta(phi[prm.ispinsoc], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
     else:
         print "\n** ERROR: something wrong."
         sys.exit(0)
