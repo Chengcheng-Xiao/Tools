@@ -140,3 +140,18 @@ generate KPOINTS file.
 ```
 kp_gen.py -c POSCAR -r 0.1
 ```
+
+### vasp_clean.py
+clean current dir and leave only vasp input files.
+- Read:
+  - Current dir
+- Output:
+  - None
+- Usage:
+```
+vasp_clean.py
+vasp_clean.py -f
+vasp_clean.py -a REPORT XDATCAR
+vasp_clean.py -f -a REPORT XDATCAR
+```
+
