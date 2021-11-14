@@ -3,6 +3,7 @@
 A script to make supercell and find atomic distance
 """
 
+from __future__ import print_function
 import argparse
 from ase.io import read, write
 from ase.build.supercells import make_supercell
@@ -45,13 +46,13 @@ prm = parser.parse_args()
 # Starting
 #----------------------------
 if prm.prt == True:
-    starttime = time.clock()
-    print "Starting calculation at",
-    print time.strftime("%H:%M:%S on %a %d %b %Y")
+    starttime = time.time()
+    print("Starting calculation at", end='')
+    print(time.strftime("%H:%M:%S on %a %d %b %Y"))
 
 # check input
 if not os.path.isfile(prm.POSCAR):
-    print "\n** ERROR: Initial position file %s was not found." % prm.POSCAR
+    print("\n** ERROR: Initial position file %s was not found." % prm.POSCAR)
     sys.exit(0)
 
 if prm.get_super == True:
@@ -60,29 +61,29 @@ if prm.get_super == True:
     # construct Tmat
     if len(prm.T_mat.split()) == 9:
         if all(check_int(s) for s in prm.T_mat.split()):
-            Tmat = np.reshape(map(int, prm.T_mat.split()),[3,3])
+            Tmat = np.reshape(list(map(int, prm.T_mat.split()),[3,3]))
         else:
-            print "\n** ERROR: Transformation matrix elements should be int."
+            print("\n** ERROR: Transformation matrix elements should be int.")
             sys.exit(0)
-    elif len(map(int, prm.T_mat.split())) == 3:
+    elif len(list(map(int, prm.T_mat.split()))) == 3:
         if all(check_int(s) for s in prm.T_mat.split()):
-            np.fill_diagonal(Tmat,map(int, prm.T_mat.split()))
+            np.fill_diagonal(Tmat,list(map(int, prm.T_mat.split())))
         else:
-            print "\n** ERROR: Transformation matrix elements should be int."
+            print("\n** ERROR: Transformation matrix elements should be int.")
             sys.exit(0)
     else:
-        print "\n** ERROR: dimension of the transformation matrix wrong."
+        print("\n** ERROR: dimension of the transformation matrix wrong.")
         sys.exit(0)
 
 if prm.getdist ==True:
     if len(prm.atom_list.split()) == 2:
         if all(check_int(s) for s in prm.atom_list.split()):
-            atom_list = map(int, prm.atom_list.split())
+            atom_list = list(map(int, prm.atom_list.split()))
         else:
-            print "\n** ERROR: Indexes of atoms should be int."
+            print("\n** ERROR: Indexes of atoms should be int.")
             sys.exit(0)
     else:
-        print "\n** ERROR: number indexes of atoms should be 2."
+        print("\n** ERROR: number indexes of atoms should be 2.")
         sys.exit(0)
 
 
@@ -91,8 +92,8 @@ if prm.getdist ==True:
 i_POSCAR=prm.POSCAR.lstrip()
 
 if prm.prt == True:
-    print "\nPosition file name: %s " % i_POSCAR
-    # print "Symmetry tolerance: %s" % prm.symmetry
+    print("\nPosition file name: %s " % i_POSCAR)
+    # print("Symmetry tolerance: %s" % prm.symmetry)
 
 # get cell informations
 #----------------------------
@@ -105,15 +106,15 @@ numbers     = initial_pos.get_atomic_numbers()
 #initial_cell = (lattice, positions, numbers)
 
 if prm.prt == True:
-    print '\n==========================================='
-    print '\nInitial Structure'
-    print "\nLattice Matrix  : (in Angstrom) "
-    print lattice
-    print "\nAtomic Positions: (in direct coordinate) "
-    print positions
-    print "\nAtomic numbers  : (for each atom) "
-    print numbers
-    print '\n==========================================='
+    print('\n===========================================')
+    print('\nInitial Structure')
+    print("\nLattice Matrix  : (in Angstrom) ")
+    print(lattice)
+    print("\nAtomic Positions: (in direct coordinate) ")
+    print(positions)
+    print("\nAtomic numbers  : (for each atom) ")
+    print(numbers)
+    print('\n===========================================')
 # visualize
 if prm.visualize == True:
     view(initial_pos)
@@ -155,15 +156,15 @@ if prm.get_super == True:
     numbers     = super_cell.get_atomic_numbers()
 
     if prm.prt == True:
-        print '\n==========================================='
-        print '\nSuper Structure'
-        print "\nLattice Matrix  : (in Angstrom) "
-        print lattice
-        print "\nAtomic Positions: (in direct coordinate) "
-        print positions
-        print "\nAtomic numbers  : (for each atom) "
-        print numbers
-        print '\n==========================================='
+        print('\n===========================================')
+        print('\nSuper Structure')
+        print("\nLattice Matrix  : (in Angstrom) ")
+        print(lattice)
+        print("\nAtomic Positions: (in direct coordinate) ")
+        print(positions)
+        print("\nAtomic numbers  : (for each atom) ")
+        print(numbers)
+        print('\n===========================================')
     # visualize?
     if prm.visualize==True:
         view(super_cell)
@@ -174,35 +175,38 @@ if prm.get_super == True:
     else:
         write(i_POSCAR+"_"+"super"+".vasp",super_cell,format='vasp')
 
-    # adding atomic species
-    #----------------------------
-    # get species
-    fin = [super_cell.get_chemical_symbols()[0]]
-    for i in range(len( super_cell.get_chemical_symbols())):
-        if i == len( super_cell.get_chemical_symbols())-1: break
-        if  super_cell.get_chemical_symbols()[i] !=  super_cell.get_chemical_symbols()[i+1]:
-            fin.append( super_cell.get_chemical_symbols()[i+1])
-    # open file and readlines
-    if prm.over == True:
-        f = open("POSCAR", "r")
-    else:
-        f = open(i_POSCAR+"_"+"super"+".vasp", "r")
-    contents = f.readlines()
-    f.close()
-    # format string
-    contents.insert(5, ' '.join(fin)+'\n')
-    # write string to file
-    if prm.over == True:
-        f = open("POSCAR", "r")
-    else:
-        f = open(i_POSCAR+"_"+"super"+".vasp", "w")
-    contents = "".join(contents)
-    f.write(contents)
-    f.close()
+
+    if float(sys.version.split()[0][:3]) < 3.0:
+        # adding atomic species
+        #----------------------------
+        # get species
+        fin = [super_cell.get_chemical_symbols()[0]]
+        for i in range(len( super_cell.get_chemical_symbols())):
+            if i == len( super_cell.get_chemical_symbols())-1: break
+            if  super_cell.get_chemical_symbols()[i] !=  super_cell.get_chemical_symbols()[i+1]:
+                fin.append( super_cell.get_chemical_symbols()[i+1])
+        # open file and readlines
+        if prm.over == True:
+            f = open("POSCAR", "r")
+        else:
+            f = open(i_POSCAR+"_"+"super"+".vasp", "r")
+        contents = f.readlines()
+        f.close()
+        # format string
+        contents.insert(5, ' '.join(fin)+'\n')
+        # write string to file
+        if prm.over == True:
+            f = open("POSCAR", "r")
+        else:
+            f = open(i_POSCAR+"_"+"super"+".vasp", "w")
+        contents = "".join(contents)
+        f.write(contents)
+        f.close()
+
     # output
     if prm.prt == True:
         if prm.over == False:
-            print "\nOutput file name: %s " % str(i_POSCAR+"_"+"super"+".vasp")
+            print("\nOutput file name: %s " % str(i_POSCAR+"_"+"super"+".vasp"))
 
 
 # get distance
@@ -212,16 +216,16 @@ if prm.getdist == True:
     dist = initial_pos.get_distance(atom_list[0]-1,atom_list[1]-1)
     if prm.prt == True:
         sys.stdout.write("\033[1;31m" ) # set color red
-        print "\nDistance between atom %d and %d: %f" %(atom_list[0], atom_list[1], dist)
+        print("\nDistance between atom %d and %d: %f" %(atom_list[0], atom_list[1], dist))
         sys.stdout.write("\033[0;0m") # reset color
     else:
-        print dist
+        print(dist)
 
 
 if prm.prt == True:
     # Post process
     #----------------------------
-    endtime = time.clock()
+    endtime = time.time()
     runtime = endtime-starttime
-    print "\nEnd of calculation."
-    print "Program was running for %.2f seconds." % runtime
+    print("\nEnd of calculation.")
+    print("Program was running for %.2f seconds." % runtime)
