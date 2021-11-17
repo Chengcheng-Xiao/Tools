@@ -2,6 +2,8 @@
 """
 A script to make kpoints file
 """
+
+from __future__ import print_function
 import seekpath
 import sys
 import ase
@@ -23,23 +25,23 @@ parser.add_argument("-r", "--resolution",
                   action="store", dest="resolution", default=0.1,
                   help="a reference target distance between neighboring k-points in the path, in units of 1/ang.")
 parser.add_argument("-t", action="store_true", dest="time_reversal",
-		          help="Turns off time reversal symmetry.")
+                  help="Turns off time reversal symmetry.")
 parser.add_argument("-s", "--symprec", action="store", default=0.01, dest="symprec",
-		          help="precision for symmetry detection [spglib]. Default: 0.01 \AA")
+                  help="precision for symmetry detection [spglib]. Default: 0.01 \AA")
 parser.add_argument("--hybrid", action="store_true", dest="hybrid",
-		          help="For hybrid bandstructure calculation?")
+                  help="For hybrid bandstructure calculation?")
 parser.add_argument("--vdir", action="store", dest="vdir", default=None,
-		          help="vacuum dir? [0->x;1->y;2->z]")
+                  help="vacuum dir? [0->x;1->y;2->z]")
 parser.add_argument("-v", action="store_true", dest="verbose", default=False,
-		          help="verbose output?")
+                  help="verbose output?")
 options = parser.parse_args()
 
 # Starting
 #----------------------------
 if options.verbose == True:
-    starttime = time.clock()
-    print "Starting calculation at",
-    print time.strftime("%H:%M:%S on %a %d %b %Y\n")
+    starttime = time.time()
+    print("Starting calculation at", end='')
+    print(time.strftime("%H:%M:%S on %a %d %b %Y\n"))
 
 # read in structure
 structure = io.read(options.input_file)
@@ -48,10 +50,10 @@ inp = (structure.cell,structure.get_scaled_positions(),numbers)
 
 # # find symmetry with spglib
 # #----------------------------
-# print "Structure information [spglib]:"
+# print("Structure information [spglib]:")
 # spacegroup = spglib.get_spacegroup(inp, symprec=float(options.symprec))
-# print "\tSpace group number: %s" % spacegroup.split()[1]
-# print "\tSpace international symbol: %s" % spacegroup.split()[0]
+# print("\tSpace group number: %s" % spacegroup.split()[1])
+# print("\tSpace international symbol: %s" % spacegroup.split()[0])
 
 
 # Turn off time reversal symmetry if necessary
@@ -61,18 +63,20 @@ else:
     tr = False
 
 # get K-points
-explicit_data = seekpath.get_explicit_k_path(inp,with_time_reversal=tr,reference_distance=float(options.resolution),symprec=float(options.symprec))
+explicit_data = seekpath.get_explicit_k_path(inp,with_time_reversal=tr,
+                                             reference_distance=float(options.resolution),
+                                             symprec=float(options.symprec))
 kpath = explicit_data['explicit_kpoints_rel']
 seg = np.array(explicit_data['explicit_segments'])
 labels = np.array(explicit_data['explicit_kpoints_labels'])
-# print labels
+
 # return symmetry
 if options.verbose == True:
-    print "Structure information:"
-    print "\tPrecision for finding symmetry: %8.6f \AA" % options.symprec
-    print "\tSpace group number: %s" % explicit_data['spacegroup_number']
-    print "\tSpace international symbol: %s" % explicit_data['spacegroup_international']
-    print "\nTime reversal symmtery: %s" % tr
+    print("Structure information:")
+    print("\tPrecision for finding symmetry: %8.6f \AA" % options.symprec)
+    print("\tSpace group number: %s" % explicit_data['spacegroup_number'])
+    print("\tSpace international symbol: %s" % explicit_data['spacegroup_international'])
+    print("\nTime reversal symmtery: %s" % tr)
 
 
 # 2D material?
@@ -87,26 +91,29 @@ seg = np.delete(seg, seg_rm, axis=0)
 fkpath = np.array([]).reshape(0,3)
 for iseg in range(len(seg)):
     fkpath=np.append(fkpath,kpath[seg[iseg,0]:seg[iseg,1]],axis=0)
-# print fkpath
 
 # construct label path
 flabels = np.array([])
 for iseg in range(len(seg)):
     flabels=np.append(flabels,labels[seg[iseg,0]:seg[iseg,1]],axis=0)
-# print flabels
+
 if options.verbose == True:
-    print "k-point path:"
+    print("k-point path:")
     for iseg in range(len(seg)):
-        print "\t%s\t(%8.6f %8.6f %8.6f)\t->\t%s\t(%8.6f %8.6f %8.6f)" %(labels[seg[iseg,0]],
-        kpath[seg[iseg,0],0], kpath[seg[iseg,0],1], kpath[seg[iseg,0],2],
-        labels[seg[iseg,1]-1],
-        kpath[seg[iseg,1]-1,0], kpath[seg[iseg,1]-1,1], kpath[seg[iseg,1]-1,2])
+        print("\t%s\t(%8.6f %8.6f %8.6f)\t->\t%s\t(%8.6f %8.6f %8.6f)" %(labels[seg[iseg,0]],
+                                                                         kpath[seg[iseg,0],0],
+                                                                         kpath[seg[iseg,0],1],
+                                                                         kpath[seg[iseg,0],2],
+                                                                         labels[seg[iseg,1]-1],
+                                                                         kpath[seg[iseg,1]-1,0],
+                                                                         kpath[seg[iseg,1]-1,1],
+                                                                         kpath[seg[iseg,1]-1,2]))
 
 # set k-point weight to zero?
 if options.hybrid:
     weight = 0.
     if options.verbose == True:
-        print "For hybrid calculations."
+        print("For hybrid calculations.")
 else:
     weight = 1./len(fkpath)
 
@@ -116,13 +123,17 @@ with open(options.output_file,'w') as outfile:
     outfile.write(str(len(fkpath))+"\n")
     outfile.write("Reciprocal\n")
     for ipoint in range(len(fkpath)):
-        outfile.write("%8.6f %8.6f %8.6f %5.3f !%s\n" % (fkpath[ipoint,0],  fkpath[ipoint,1], fkpath[ipoint,2], weight, flabels[ipoint]))
+        outfile.write("% 8.6f % 8.6f % 8.6f %5.3f !%s\n" % (fkpath[ipoint,0],
+                                                         fkpath[ipoint,1],
+                                                         fkpath[ipoint,2],
+                                                         weight,
+                                                         flabels[ipoint]))
 if options.verbose == True:
     print('Output written to {}'.format(options.output_file))
-    endtime = time.clock()
+    endtime = time.time()
     runtime = endtime-starttime
-    print "\nEnd of calculation."
-    print "Program was running for %.2f seconds." % runtime
+    print("\nEnd of calculation.")
+    print("Program was running for %.2f seconds." % runtime)
 
 # # Write new conventions cell, to ensure compliance with the kpoints
 # new_data = seekpath.get_path(inp)
