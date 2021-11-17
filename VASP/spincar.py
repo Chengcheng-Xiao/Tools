@@ -18,26 +18,34 @@ import time
 from ase.calculators.vasp import VaspChargeDensity
 
 
+# Command line praser
+#----------------------------
+parser = argparse.ArgumentParser(description='A script to calculate the spin density.')
+parser.add_argument('CHGCAR', nargs='*', help="name of the CHGCAR files.")
+
+prm = parser.parse_args()
+
 starttime = time.time()
 print("Starting calculation at",end='')
 print(time.strftime("%H:%M:%S on %a %d %b %Y"))
 
+
 # Find out how many arguments were on the command line,
-nsubtract = len(sys.argv)-1
+nsubtract = len(prm.CHGCAR)
 if not nsubtract == 1:
     print("\n** ERROR: Must specify the name of file on command line.")
     print("eg. chgdiff.py CHGCAR")
     print("Only one file name are allowed")
     sys.exit(0)
 
-if not os.path.isfile(sys.argv[1]):
-    print("\n** ERROR: Input file %s was not found." % sys.argv[1])
+if not os.path.isfile(prm.CHGCAR[0]):
+    print("\n** ERROR: Input file %s was not found." % prm.CHGCAR[0])
     sys.exit(0)
 
 
 # Read information from command line
 # First specify location of CHGCAR
-CHGCARfile = sys.argv[1].lstrip()
+CHGCARfile = prm.CHGCAR[0].lstrip()
 
 
 # Open geometry and density class objects
