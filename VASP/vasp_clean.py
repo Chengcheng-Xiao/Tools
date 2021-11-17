@@ -2,7 +2,10 @@
 """
 A script to clean current working dir.
 """
+
+from __future__ import print_function
 import os
+import sys
 import argparse
 
 # Command line praser
@@ -34,15 +37,18 @@ dir_file = [i for i in dir_file if not os.path.isdir(i)]
 
 if prm.force == False:
     # Warning is very much needed!
-    print 'Removing:\n\t','\n\t'.join(dir_file)
-    val = raw_input("Are you sure? (y/n) ")
+    print('Removing:\n\t','\n\t'.join(dir_file))
+    if float(sys.version.split()[0][:3]) < 3.0:
+        val = raw_input("Are you sure? (y/n) ")
+    else:
+        val = input("Are you sure? (y/n) ")
     if val == 'y':
         # remove files
         for file in dir_file:
             os.remove(file)
-        print 'done.'
+        print('done.')
     elif val == 'n':
-        print "exiting..."
+        print("exiting...")
     else:
         print('Input not accepted, exiting...')
         exit()
@@ -50,4 +56,3 @@ else:
     # remove files
     for file in dir_file:
         os.remove(file)
-
