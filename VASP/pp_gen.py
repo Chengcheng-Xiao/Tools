@@ -7,6 +7,7 @@ LDA -> $VASP_PP_PATH/potpaw
 PBE -> $VASP_PP_PATH/potpaw_PBE
 """
 
+from __future__ import print_function
 import argparse
 import os
 import sys
@@ -34,14 +35,14 @@ prm = parser.parse_args()
 # Starting
 #---------
 if prm.prt == True:
-    starttime = time.clock()
-    print "Starting at",
-    print time.strftime("%H:%M:%S on %a %d %b %Y")
+    starttime = time.time()
+    print("Starting at",end='')
+    print(time.strftime("%H:%M:%S on %a %d %b %Y"))
 
 # check input
 if prm.atom_list == None and not os.path.isfile(prm.POSCAR):
     sys.stdout.write("\033[1;31m" ) # set color red
-    print "\n** ERROR: Initial position file %s was not found." % prm.POSCAR
+    print("\n** ERROR: Initial position file %s was not found." % prm.POSCAR)
     sys.stdout.write("\033[0;0m") # reset color
     sys.exit(0)
 
@@ -52,20 +53,20 @@ if prm.atom_list == None:
     f.close()
 elif prm.POSCAR != "POSAR" and prm.atom_list != None:
     sys.stdout.write("\033[1;31m" ) # set color red
-    print "\n** WARNING: -i override -c"
+    print("\n** WARNING: -i override -c")
     sys.stdout.write("\033[0;0m") # reset color
     atom_list = prm.atom_list.split()
 else:
     sys.stdout.write("\033[1;31m" ) # set color red
-    print "\n** ERROR: no atom species specified."
+    print("\n** ERROR: no atom species specified.")
     sys.stdout.write("\033[0;0m") # reset color
     sys.exit(0)
 
 # print out atom_list
 if prm.prt == True:
-    print "\ninput atom species: %s " % atom_list
-    print "input xc:           %s " % prm.xc
-    print "input setup:        %s " % prm.setup
+    print("\ninput atom species: %s " % atom_list)
+    print("input xc:           %s " % prm.xc)
+    print("input setup:        %s " % prm.setup)
 
 # Dictionary containing all data
 #-------------------------------
@@ -713,27 +714,27 @@ elif prm.setup == "materialsproject":
         for i in atom_list:
             if len(materialsproject[i]) == 0:
                 sys.stdout.write("\033[1;31m" ) # set color red
-                print "\n** ERROR: Not implemented. Choose from below:"
+                print("\n** ERROR: Not implemented. Choose from below:")
                 sys.stdout.write("\033[0;0m") # reset color
-                print i+": ",recommended[i]
+                print(i+": ",recommended[i])
                 inputstr = raw_input("--->>>:")
                 file_list.append(inputstr)
             else:
                 file_list.append(materialsproject[i][0])
     elif prm.xc == "LDA":
         sys.stdout.write("\033[1;31m" ) # set color red
-        print "\n** ERROR: materialsproject option not implemented with LDA."
-        print "\n          use PBE instead."
+        print("\n** ERROR: materialsproject option not implemented with LDA.")
+        print("\n          use PBE instead.")
         sys.stdout.write("\033[0;0m") # reset color
         sys.exit(0)
 elif prm.setup == "manual":
     for i in atom_list:
-        print i+": ",recommended[i]
+        print(i+": ",recommended[i])
         inputstr = raw_input("--->>>:")
         file_list.append(inputstr)
 else:
     sys.stdout.write("\033[1;31m" ) # set color red
-    print "** ERROR: wrong setup."
+    print("** ERROR: wrong setup.")
     sys.stdout.write("\033[0;0m") # reset color
     sys.exit(0)
 
@@ -747,7 +748,7 @@ if prm.over == True or prm.over == False and os.path.exists("POTCAR") == False:
                     outfile.write(line)
 elif prm.over == False and os.path.exists("POTCAR") == True:
     sys.stdout.write("\033[1;31m" ) # set color red
-    print "\n** ERROR: POTCAR exist. use -o to override."
+    print("\n** ERROR: POTCAR exist. use -o to override.")
     sys.stdout.write("\033[0;0m") # reset color
     sys.exit(0)
 
@@ -756,8 +757,7 @@ elif prm.over == False and os.path.exists("POTCAR") == True:
 if prm.prt == True:
     # Post process
     #-------------
-    endtime = time.clock()
+    endtime = time.time()
     runtime = endtime-starttime
-    print "\nFinished."
-    print "Program was running for %.2f seconds." % runtime
-
+    print("\nFinished.")
+    print("Program was running for %.2f seconds." % runtime)
