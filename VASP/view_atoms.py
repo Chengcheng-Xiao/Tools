@@ -3,25 +3,36 @@
 A script to read POSCAR/CONTCAR files and visualize them using ase.gui
 Depends on ase
 """
+
+from __future__ import print_function
 import sys, os
+import argparse
 from ase.io import read
 from ase.visualize import view
 
+# Command line praser
+#----------------------------
+parser = argparse.ArgumentParser(description='A script to calculate the differential charge density.')
+parser.add_argument('POSCAR', nargs='*', help="name of the CHGCAR files.")
+
+prm = parser.parse_args()
+
 # Find out how many arguments were on the command line,
-nsubtract = len(sys.argv)-2
-if nsubtract >= 1:
-    print "\n** ERROR: Only support one file."
-    print "eg. view_atoms.py POSCAR"
+# nsubtract = len(sys.argv)-2
+nsubtract = len(prm.POSCAR)
+if nsubtract > 1:
+    print("\n** ERROR: Can only view one file at a time.")
+    print("eg. view_atoms.py POSCAR")
     sys.exit(0)
 
 # Check that files exist
-for name in sys.argv[1:]:
+for name in prm.POSCAR:
     if not os.path.isfile(name):
-        print "\n** ERROR: Input file %s was not found." % name
+        print("\n** ERROR: Input file %s was not found." % name)
         sys.exit(0)
 
 # Read information from command line
-File = sys.argv[1].lstrip()
+File = prm.POSCAR[0].lstrip()
 
 atoms = read(File, format='vasp')
 view(atoms)
