@@ -12,7 +12,7 @@ from ase.visualize import view
 
 # Command line praser
 #----------------------------
-parser = argparse.ArgumentParser(description='A script to calculate the differential charge density.')
+parser = argparse.ArgumentParser(description='A script to view atomic structure.')
 parser.add_argument('POSCAR', nargs='*', help="name of the CHGCAR files.")
 
 prm = parser.parse_args()
