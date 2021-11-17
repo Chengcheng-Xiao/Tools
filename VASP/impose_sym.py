@@ -5,6 +5,7 @@ A script to find the the symmetry of unitcell and return refined structures.
 Depends on ase and spglib
 """
 
+from __future__ import print_function
 import argparse
 import spglib
 from ase.io import read, write
@@ -47,25 +48,25 @@ prm = parser.parse_args()
 
 # Starting
 #----------------------------
-starttime = time.clock()
-print "Starting calculation at",
-print time.strftime("%H:%M:%S on %a %d %b %Y")
+starttime = time.time()
+print("Starting calculation at", end='')
+print(time.strftime("%H:%M:%S on %a %d %b %Y"))
 
 # check input
 if not os.path.isfile(prm.POSCAR):
-    print "\n** ERROR: Initial position file %s was not found." % prm.POSCAR
+    print("\n** ERROR: Initial position file %s was not found." % prm.POSCAR)
     sys.exit(0)
 
 if not is_number(prm.symmetry):
-    print "\n** ERROR: symmetry tolerance shoule be a number."
+    print("\n** ERROR: symmetry tolerance shoule be a number.")
     sys.exit(0)
 
 # Read information from command line
 # First specify location of POSCAR
 i_POSCAR=prm.POSCAR.lstrip()
 
-print "\nPosition file name: %s " % i_POSCAR
-print "Symmetry tolerance: %s" % prm.symmetry
+print("\nPosition file name: %s " % i_POSCAR)
+print("Symmetry tolerance: %s" % prm.symmetry)
 
 # get cell informations
 #----------------------------
@@ -77,15 +78,15 @@ numbers     = initial_pos.get_atomic_numbers()
 #magmoms = [np.ones(initial_pos.get_number_of_atoms())]
 initial_cell = (lattice, positions, numbers)
 
-print '\n==========================================='
-print '\nInitial Structure'
-print "\nLattice Matrix  : (in Angstrom) "
-print lattice
-print "\nAtomic Positions: (in direct coordinate) "
-print positions
-print "\nAtomic numbers  : (for each atom) "
-print numbers
-print '\n==========================================='
+print('\n===========================================')
+print('\nInitial Structure')
+print("\nLattice Matrix  : (in Angstrom) ")
+print(lattice)
+print("\nAtomic Positions: (in direct coordinate) ")
+print(positions)
+print("\nAtomic numbers  : (for each atom) ")
+print(numbers)
+print('\n===========================================')
 
 # visualize
 if prm.visualize==True:
@@ -94,27 +95,27 @@ if prm.visualize==True:
 # find symmetry
 #----------------------------
 spacegroup = spglib.get_spacegroup(initial_cell, symprec=float(prm.symmetry))
-print "Spacegroup: %s" % spacegroup
+print("Spacegroup: %s" % spacegroup)
 
-print '\n==========================================='
-print "\nFinding primitive cell..."
+print('\n===========================================')
+print("\nFinding primitive cell...")
 
 # impoer or not?
 if prm.no_ideal==False:
-    print '\nImposing symmetry...'
+    print('\nImposing symmetry...')
     f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=False, symprec=float(prm.symmetry))
 else:
-    print '\nsymmetry not imposed'
+    print('\nsymmetry not imposed')
     f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=True, symprec=float(prm.symmetry))
 
 # Final structure
-print "\nLattice Matrix  : (in Angstrom) "
-print f_lattice
-print "\nAtomic Positions: (in direct coordinate) "
-print f_positions
-print "\nAtomic numbers  : (for each atom) "
-print f_numbers
-print '\n==========================================='
+print("\nLattice Matrix  : (in Angstrom) ")
+print(f_lattice)
+print("\nAtomic Positions: (in direct coordinate) ")
+print(f_positions)
+print("\nAtomic numbers  : (for each atom) ")
+print(f_numbers)
+print('\n===========================================')
 
 
 # set cell informations
@@ -130,28 +131,29 @@ if prm.visualize==True:
 # Write final structure to file
 write(i_POSCAR+"_"+str(prm.symmetry)+".vasp",final_pos,format='vasp')
 
-# adding atomic species
-fin = [final_pos.get_chemical_symbols()[0]]
-for i in range(len(final_pos.get_chemical_symbols())):
-    if i == len(final_pos.get_chemical_symbols())-1: break
-    if final_pos.get_chemical_symbols()[i] != final_pos.get_chemical_symbols()[i+1]:
-        fin.append(final_pos.get_chemical_symbols()[i+1])
+if float(sys.version.split()[0][:3]) < 3.0:
+    # adding atomic species
+    fin = [final_pos.get_chemical_symbols()[0]]
+    for i in range(len(final_pos.get_chemical_symbols())):
+        if i == len(final_pos.get_chemical_symbols())-1: break
+        if final_pos.get_chemical_symbols()[i] != final_pos.get_chemical_symbols()[i+1]:
+            fin.append(final_pos.get_chemical_symbols()[i+1])
 
-f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "r")
-contents = f.readlines()
-f.close()
+    f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "r")
+    contents = f.readlines()
+    f.close()
 
-contents.insert(5, ' '.join(fin)+'\n')
+    contents.insert(5, ' '.join(fin)+'\n')
 
-f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "w")
-contents = "".join(contents)
-f.write(contents)
-f.close()
+    f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "w")
+    contents = "".join(contents)
+    f.write(contents)
+    f.close()
 
-print "\nOutput file name: %s " % str(i_POSCAR+"_"+str(prm.symmetry)+".vasp")
+print("\nOutput file name: %s " % str(i_POSCAR+"_"+str(prm.symmetry)+".vasp"))
 # Post process
 #----------------------------
-endtime = time.clock()
+endtime = time.time()
 runtime = endtime-starttime
-print "\nEnd of calculation."
-print "Program was running for %.2f seconds." % runtime
+print("\nEnd of calculation.")
+print("Program was running for %.2f seconds." % runtime)
