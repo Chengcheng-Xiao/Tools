@@ -717,7 +717,10 @@ elif prm.setup == "materialsproject":
                 print("\n** ERROR: Not implemented. Choose from below:")
                 sys.stdout.write("\033[0;0m") # reset color
                 print(i+": ",recommended[i])
-                inputstr = raw_input("--->>>:")
+                if float(sys.version.split()[0][:3]) < 3.0:
+                    inputstr = raw_input("--->>>:")
+                else:
+                    inputstr = input("--->>>:")
                 file_list.append(inputstr)
             else:
                 file_list.append(materialsproject[i][0])
@@ -730,7 +733,10 @@ elif prm.setup == "materialsproject":
 elif prm.setup == "manual":
     for i in atom_list:
         print(i+": ",recommended[i])
-        inputstr = raw_input("--->>>:")
+        if float(sys.version.split()[0][:3]) < 3.0:
+            inputstr = raw_input("--->>>:")
+        else:
+            inputstr = input("--->>>:")
         file_list.append(inputstr)
 else:
     sys.stdout.write("\033[1;31m" ) # set color red

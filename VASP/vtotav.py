@@ -5,6 +5,7 @@ User must specify filename and direction on command line.
 Depends on ase
 """
 
+from __future__ import print_function
 import os
 import sys
 import numpy as np
@@ -34,9 +35,9 @@ parser.add_argument('--len', action="store", default="0.1", type=np.float, dest=
 prm = parser.parse_args()
 
 
-starttime = time.clock()
-print "Starting calculation at",
-print time.strftime("%H:%M:%S on %a %d %b %Y")
+starttime = time.time()
+print("Starting calculation at", end='')
+print(time.strftime("%H:%M:%S on %a %d %b %Y"))
 
 # if len(sys.argv) != 3:
 #     print "\n** ERROR: Must specify name of file and direction on command line."
@@ -44,7 +45,7 @@ print time.strftime("%H:%M:%S on %a %d %b %Y")
 #     sys.exit(0)
 
 if not os.path.isfile(prm.LOCPOT):
-    print "\n** ERROR: Input file %s was not found." % prm.LOCPOT
+    print("\n** ERROR: Input file %s was not found." % prm.LOCPOT)
     sys.exit(0)
 
 # Read information from command line
@@ -56,8 +57,8 @@ LOCPOTfile = prm.LOCPOT.lstrip()
 allowed = "xyzXYZ"
 direction = prm.dir.lstrip()
 if allowed.find(direction) == -1 or len(direction)!=1 :
-    print "** WARNING: The direction was input incorrectly."
-    print "** Setting to z-direction by default."
+    print("** WARNING: The direction was input incorrectly.")
+    print("** Setting to z-direction by default.")
 if direction.islower():
     direction = direction.upper()
 filesuffix = "_%s" % direction
@@ -73,8 +74,8 @@ del vasp_charge
 if 'LOCPOT' in LOCPOTfile:
     potl=potl*atoms.get_volume()
 
-print "\nReading file: %s" % LOCPOTfile
-print "Performing average in %s direction" % direction
+print("\nReading file: %s" % LOCPOTfile)
+print("Performing average in %s direction" % direction)
 
 # Read in lattice parameters and scale factor
 #---------------------------------------------
@@ -89,11 +90,11 @@ latticelength = latticelength**0.5
 #------------------------
 ngridpts = np.array(potl.shape)
 totgridpts = ngridpts.prod()
-print "Potential stored on a %dx%dx%d grid" % (ngridpts[0],ngridpts[1],ngridpts[2])
-print "Total number of points is %d" % totgridpts
-print "Reading potential data from file...",
+print("Potential stored on a %dx%dx%d grid" % (ngridpts[0],ngridpts[1],ngridpts[2]))
+print("Total number of points is %d" % totgridpts)
+print("Reading potential data from file...", end='')
 sys.stdout.flush()
-print "done."
+print("done.")
 
 # Perform average
 #-----------------
@@ -194,7 +195,7 @@ if prm.macro == True:
 #-------------------
 if prm.macro == True:
     averagefile = LOCPOTfile + filesuffix + '_macro'
-    print "Writing macroscopic averaged data to file %s..." % averagefile,
+    print("Writing macroscopic averaged data to file %s..." % averagefile, end='')
     sys.stdout.flush()
     outputfile = open(averagefile,"w")
     if 'LOCPOT' in LOCPOTfile:
@@ -207,12 +208,12 @@ if prm.macro == True:
         x = i*xdiff
         outputfile.write("%15.8g %15.8g\n" % (x,average[i]))
     outputfile.close()
-    print "done."
+    print("done.")
 
 # Print out average
 #-------------------
 averagefile = LOCPOTfile + filesuffix
-print "Writing averaged data to file %s..." % averagefile,
+print("Writing averaged data to file %s..." % averagefile, end='')
 sys.stdout.flush()
 outputfile = open(averagefile,"w")
 if 'LOCPOT' in LOCPOTfile:
@@ -231,10 +232,10 @@ else:
         x = i*xdiff
         outputfile.write("%15.8g %15.8g\n" % (x,average[i]))
 outputfile.close()
-print "done."
+print("done.")
 
 
-endtime = time.clock()
+endtime = time.time()
 runtime = endtime-starttime
-print "\nEnd of calculation."
-print "Program was running for %.2f seconds." % runtime
+print("\nEnd of calculation.")
+print("Program was running for %.2f seconds." % runtime)
