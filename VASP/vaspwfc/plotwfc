@@ -1,9 +1,11 @@
-#!/usr/bin/env python
+#! /usr/bin/python
+###!/usr/bin/env python
 """
 A wrapper to plot VASP's pseudo wave-functions
 Depends on vasp_constant and vaspwfc
 """
 
+from __future__ import print_function
 import argparse, os
 from vaspwfc import vaspwfc
 
@@ -31,6 +33,8 @@ parser.add_argument('-w','--WAVECAR', action="store", default=str('./WAVECAR'), 
                     help='input WAVECAR name (Default=./WAVECAR)')
 parser.add_argument('-c','--POSCAR', action="store", default=str('./POSCAR'), dest="POSCAR",
                     help='input POSCAR name (Default=./POSCAR)')
+parser.add_argument('-g', '--gamma', action="store_true", default=False, dest="lgamma",
+                    help='vasp_gam ? (Default=False)')
 prm = parser.parse_args()
 
 # Starting
@@ -42,20 +46,23 @@ prm = parser.parse_args()
 # check input
 #----------------------------
 if not os.path.isfile(prm.OUTCAR):
-    print "\n** ERROR: file %s not found." % prm.OURCAR
+    print("\n** ERROR: file %s not found." % prm.OURCAR)
     sys.exit(0)
 
 if not os.path.isfile(prm.WAVECAR):
-    print "\n** ERROR: file %s not found." % prm.WAVECAR
+    print("\n** ERROR: file %s not found." % prm.WAVECAR)
     sys.exit(0)
 
 if not os.path.isfile(prm.POSCAR):
-    print "\n** ERROR: file %s not found." % prm.POSCAR
+    print("\n** ERROR: file %s not found." % prm.POSCAR)
     sys.exit(0)
 
 # Reading wfc
 #----------------------------
-wav = vaspwfc(prm.WAVECAR, lsorbit=prm.lsorbit)
+if prm.lgamma:
+    wav = vaspwfc(prm.WAVECAR, lsorbit=prm.lsorbit, lgamma=True, gamma_half='x')
+else:
+    wav = vaspwfc(prm.WAVECAR, lsorbit=prm.lsorbit)
 # KS orbital in real space, double the size of the FT grid
 phi = wav.wfc_r(ispin=prm.ispin,ikpt=prm.ikpt, iband=prm.iband, ngrid=wav._ngrid * 2)
 
@@ -67,7 +74,7 @@ if prm.lelf == True:
     *                ELF mode only suuports ISYM=-1.                  *
     #-----------------------------------------------------------------#
             """
-    print warning
+    print(warning)
     # get weight of each kpt
     kptw = []
     with open('IBZKPT') as fp:
@@ -89,14 +96,13 @@ elif prm.lelf == False:
             wav.save2vesta(phi, prefix="WAV."+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
     elif prm.lsorbit == True:
         if prm.lchg == True:
-            print "\n** ERROR: charge plot does not support SOC."
+            print("\n** ERROR: charge plot does not support SOC.")
         else:
-#            wav.save2vesta(phi[prm.ispin], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
-            print "spin component:",prm.ispinsoc
+            print("spin component:",prm.ispinsoc)
             wav.save2vesta(phi[prm.ispinsoc], prefix='socWAV.'+str(prm.ikpt).zfill(4)+'.'+str(prm.iband).zfill(4)+'.'+str(prm.ispin).zfill(1), poscar=prm.POSCAR)
     else:
-        print "\n** ERROR: something wrong."
+        print("\n** ERROR: something wrong.")
         sys.exit(0)
 else:
-    print "\n** ERROR: something wrong."
+    print("\n** ERROR: something wrong.")
     sys.exit(0)
