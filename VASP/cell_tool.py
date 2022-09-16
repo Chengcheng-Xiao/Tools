@@ -61,7 +61,9 @@ if prm.get_super == True:
     # construct Tmat
     if len(prm.T_mat.split()) == 9:
         if all(check_int(s) for s in prm.T_mat.split()):
-            Tmat = np.reshape(list(map(int, prm.T_mat.split()),[3,3]))
+            #print(np.array(prm.T_mat.split(),dtype=int).reshape([3,3]))
+            Tmat = np.array(prm.T_mat.split(),dtype=int).reshape([3,3])
+            #Tmat = np.reshape(list(map(int, prm.T_mat.split()),[3,3]))
         else:
             print("\n** ERROR: Transformation matrix elements should be int.")
             sys.exit(0)
@@ -97,7 +99,7 @@ if prm.prt == True:
 
 # get cell informations
 #----------------------------
-initial_pos = read(i_POSCAR, format='vasp')
+initial_pos = read(i_POSCAR)#, format='vasp')
 lattice     = initial_pos.get_cell()
 positions   = initial_pos.get_scaled_positions()
 numbers     = initial_pos.get_atomic_numbers()
@@ -109,7 +111,7 @@ if prm.prt == True:
     print('\n===========================================')
     print('\nInitial Structure')
     print("\nLattice Matrix  : (in Angstrom) ")
-    print(lattice)
+    print(np.array_str(lattice.array, precision=8))
     print("\nAtomic Positions: (in direct coordinate) ")
     print(positions)
     print("\nAtomic numbers  : (for each atom) ")
@@ -120,12 +122,12 @@ if prm.visualize == True:
     view(initial_pos)
 
 # get atomic species
-fin = [initial_pos.get_chemical_symbols()[0]]
-for i in range(len(initial_pos.get_chemical_symbols())):
-    if i == len(initial_pos.get_chemical_symbols())-1: break
-    if initial_pos.get_chemical_symbols()[i] != initial_pos.get_chemical_symbols()[i+1]:
-        fin.append(initial_pos.get_chemical_symbols()[i+1])
-
+# fin = [initial_pos.get_chemical_symbols()[0]]
+# for i in range(len(initial_pos.get_chemical_symbols())):
+#     if i == len(initial_pos.get_chemical_symbols())-1: break
+#     if initial_pos.get_chemical_symbols()[i] != initial_pos.get_chemical_symbols()[i+1]:
+#         fin.append(initial_pos.get_chemical_symbols()[i+1])
+atom_species=set(initial_pos.get_chemical_symbols()) # 2022-09-14: use set here.
 
 # make supercell
 #----------------------------
@@ -137,7 +139,7 @@ if prm.get_super == True:
     #----------------------------
     indices = []
     symbls    = []
-    for symbol in fin:
+    for symbol in atom_species:
         ii = 0
         for atom in super_cell.get_chemical_symbols():
             if atom == symbol:
@@ -159,7 +161,7 @@ if prm.get_super == True:
         print('\n===========================================')
         print('\nSuper Structure')
         print("\nLattice Matrix  : (in Angstrom) ")
-        print(lattice)
+        print(np.array_str(lattice.array, precision=8))
         print("\nAtomic Positions: (in direct coordinate) ")
         print(positions)
         print("\nAtomic numbers  : (for each atom) ")
@@ -180,11 +182,13 @@ if prm.get_super == True:
         # adding atomic species
         #----------------------------
         # get species
-        fin = [super_cell.get_chemical_symbols()[0]]
-        for i in range(len( super_cell.get_chemical_symbols())):
-            if i == len( super_cell.get_chemical_symbols())-1: break
-            if  super_cell.get_chemical_symbols()[i] !=  super_cell.get_chemical_symbols()[i+1]:
-                fin.append( super_cell.get_chemical_symbols()[i+1])
+        # fin = [super_cell.get_chemical_symbols()[0]]
+        # for i in range(len( super_cell.get_chemical_symbols())):
+        #     if i == len( super_cell.get_chemical_symbols())-1: break
+        #     if  super_cell.get_chemical_symbols()[i] !=  super_cell.get_chemical_symbols()[i+1]:
+        #         fin.append( super_cell.get_chemical_symbols()[i+1])
+        # atom_species=set(super_cell.get_chemical_symbols())
+
         # open file and readlines
         if prm.over == True:
             f = open("POSCAR", "r")
@@ -193,7 +197,7 @@ if prm.get_super == True:
         contents = f.readlines()
         f.close()
         # format string
-        contents.insert(5, ' '.join(fin)+'\n')
+        contents.insert(5, ' '.join(atom_species)+'\n')
         # write string to file
         if prm.over == True:
             f = open("POSCAR", "r")

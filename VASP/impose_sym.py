@@ -108,15 +108,6 @@ else:
     print('\nsymmetry not imposed')
     f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=True, symprec=float(prm.symmetry))
 
-# Final structure
-print("\nLattice Matrix  : (in Angstrom) ")
-print(f_lattice)
-print("\nAtomic Positions: (in direct coordinate) ")
-print(f_positions)
-print("\nAtomic numbers  : (for each atom) ")
-print(f_numbers)
-print('\n===========================================')
-
 
 # set cell informations
 #----------------------------
@@ -124,6 +115,42 @@ final_pos = Atoms(numbers=f_numbers,
                   pbc=True,
                   cell=f_lattice,
                   scaled_positions=f_positions)
+
+# some post processing...
+#----------------------------
+
+# get atomic species
+# fin = [final_pos.get_chemical_symbols()[0]]
+# for i in range(len(final_pos.get_chemical_symbols())):
+#     if i == len(final_pos.get_chemical_symbols())-1: break
+#     if final_pos.get_chemical_symbols()[i] != final_pos.get_chemical_symbols()[i+1]:
+#         fin.append(final_pos.get_chemical_symbols()[i+1])
+atom_species=set(final_pos.get_chemical_symbols()) # 2022-09-14: use set here.
+
+indices = []
+symbls    = []
+for symbol in atom_species:
+    ii = 0
+    for atom in final_pos.get_chemical_symbols():
+        if atom == symbol:
+            indices.append(ii) # get sorted atomic index
+            symbls.append(symbol) # get sorted atomic symbols
+        ii += 1
+
+pos_new     = [final_pos.get_positions()[i] for i in indices]
+final_pos.set_positions(pos_new)
+final_pos.set_chemical_symbols(symbls)
+
+# Final structure
+print("\nLattice Matrix  : (in Angstrom) ")
+print(np.array_str(final_pos.get_cell().array, precision=8))
+print("\nAtomic Positions: (in direct coordinate) ")
+print(np.array_str(final_pos.get_scaled_positions(), precision=8))
+print("\nAtomic numbers  : (for each atom) ")
+print(np.array_str(final_pos.numbers, precision=8))
+print('\n===========================================')
+
+
 # visualize
 if prm.visualize==True:
     view(final_pos)
