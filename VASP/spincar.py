@@ -8,6 +8,7 @@ Depends on ase
 """
 
 from __future__ import print_function
+import argparse
 import os
 import sys
 import numpy as np
