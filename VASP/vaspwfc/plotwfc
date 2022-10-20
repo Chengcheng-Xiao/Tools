@@ -1,5 +1,4 @@
-#! /usr/bin/python
-###!/usr/bin/env python
+#!/usr/bin/env python
 """
 A wrapper to plot VASP's pseudo wave-functions
 Depends on vasp_constant and vaspwfc
