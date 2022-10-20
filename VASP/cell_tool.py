@@ -133,6 +133,7 @@ atom_species=set(initial_pos.get_chemical_symbols()) # 2022-09-14: use set here.
 #----------------------------
 if prm.get_super == True:
     del initial_pos.constraints
+    print(initial_pos,Tmat)
     super_cell = make_supercell(initial_pos,Tmat)
 
     # some post processing...
