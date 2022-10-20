@@ -36,11 +36,13 @@ def is_number(s):
 #----------------------------
 # Do we want to convert the final structure into use primitive cell?
 parser = argparse.ArgumentParser(description='A script to find the the symmetry of unitcell and return refined structures.')
-parser.add_argument('-noi','--no_ideal', action="store_true", default=False, dest='no_ideal',
-                    help='Do not impose symmetry. If set, only find primitive cell without change atomic positions. (Default=False)')
+parser.add_argument('--no_impose_sym', action="store_true", default=False, dest='no_ideal',
+                    help='Do not impose symmetry (do not change atomic position to ideal). (Default=False)')
+parser.add_argument('--no_primitive', action="store_false", default=True, dest='to_primitive',
+                    help='Do not change cell to primitive cell, if not set, cell will be primitive. (Default=False)')
 parser.add_argument('-v','--visualize', action="store_true", default=False, dest="visualize",
                     help='Use ASE-GUI to visualize structure (Default=False)')
-parser.add_argument('-s','--symmetry', action="store", default=float(1E-5), dest="symmetry",
+parser.add_argument('-s','--sym_tol', action="store", default=float(0.01), dest="sym_tol",
                     help='symmetry tolerance for finding symmetry (Default=1E-5)')
 parser.add_argument('-c','--POSCAR', action="store", default=str('POSCAR'), dest="POSCAR",
                     help='input file name (Default=POSCAR)')
@@ -57,7 +59,7 @@ if not os.path.isfile(prm.POSCAR):
     print("\n** ERROR: Initial position file %s was not found." % prm.POSCAR)
     sys.exit(0)
 
-if not is_number(prm.symmetry):
+if not is_number(prm.sym_tol):
     print("\n** ERROR: symmetry tolerance shoule be a number.")
     sys.exit(0)
 
@@ -66,7 +68,7 @@ if not is_number(prm.symmetry):
 i_POSCAR=prm.POSCAR.lstrip()
 
 print("\nPosition file name: %s " % i_POSCAR)
-print("Symmetry tolerance: %s" % prm.symmetry)
+print("Symmetry tolerance: %s" % prm.sym_tol)
 
 # get cell informations
 #----------------------------
@@ -94,7 +96,7 @@ if prm.visualize==True:
 
 # find symmetry
 #----------------------------
-spacegroup = spglib.get_spacegroup(initial_cell, symprec=float(prm.symmetry))
+spacegroup = spglib.get_spacegroup(initial_cell, symprec=float(prm.sym_tol))
 print("Spacegroup: %s" % spacegroup)
 
 print('\n===========================================')
@@ -103,10 +105,30 @@ print("\nFinding primitive cell...")
 # impoer or not?
 if prm.no_ideal==False:
     print('\nImposing symmetry...')
-    f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=False, symprec=float(prm.symmetry))
+    if prm.to_primitive:
+        print('\nFinding primitive cell...')
+        f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=False, symprec=float(prm.sym_tol))
+    else:
+        f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=False, no_idealize=False, symprec=float(prm.sym_tol))
 else:
-    print('\nsymmetry not imposed')
-    f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=True, symprec=float(prm.symmetry))
+    print('\nsymmetry NOT imposed')
+    if prm.to_primitive:
+        print('\nFinding primitive cell...')
+        f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=True, symprec=float(prm.sym_tol))
+    else:
+        f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=False, no_idealize=True, symprec=float(prm.sym_tol))
+
+# Final structure
+print("\nLattice Matrix  : (in Angstrom) ")
+print(f_lattice)
+print("\nAtomic Positions: (in direct coordinate) ")
+# sort everything by types.
+f_positions=f_positions[f_numbers.argsort()]
+print(f_positions)
+print("\nAtomic numbers  : (for each atom) ")
+f_numbers=f_numbers[f_numbers.argsort()]
+print(f_numbers)
+print('\n===========================================')
 
 
 # set cell informations
@@ -115,48 +137,12 @@ final_pos = Atoms(numbers=f_numbers,
                   pbc=True,
                   cell=f_lattice,
                   scaled_positions=f_positions)
-
-# some post processing...
-#----------------------------
-
-# get atomic species
-# fin = [final_pos.get_chemical_symbols()[0]]
-# for i in range(len(final_pos.get_chemical_symbols())):
-#     if i == len(final_pos.get_chemical_symbols())-1: break
-#     if final_pos.get_chemical_symbols()[i] != final_pos.get_chemical_symbols()[i+1]:
-#         fin.append(final_pos.get_chemical_symbols()[i+1])
-atom_species=set(final_pos.get_chemical_symbols()) # 2022-09-14: use set here.
-
-indices = []
-symbls    = []
-for symbol in atom_species:
-    ii = 0
-    for atom in final_pos.get_chemical_symbols():
-        if atom == symbol:
-            indices.append(ii) # get sorted atomic index
-            symbls.append(symbol) # get sorted atomic symbols
-        ii += 1
-
-pos_new     = [final_pos.get_positions()[i] for i in indices]
-final_pos.set_positions(pos_new)
-final_pos.set_chemical_symbols(symbls)
-
-# Final structure
-print("\nLattice Matrix  : (in Angstrom) ")
-print(np.array_str(final_pos.get_cell().array, precision=8))
-print("\nAtomic Positions: (in direct coordinate) ")
-print(np.array_str(final_pos.get_scaled_positions(), precision=8))
-print("\nAtomic numbers  : (for each atom) ")
-print(np.array_str(final_pos.numbers, precision=8))
-print('\n===========================================')
-
-
 # visualize
 if prm.visualize==True:
     view(final_pos)
 
 # Write final structure to file
-write(i_POSCAR+"_"+str(prm.symmetry)+".vasp",final_pos,format='vasp')
+write(i_POSCAR+"_"+str(prm.sym_tol)+".vasp",final_pos,format='vasp')
 
 if float(sys.version.split()[0][:3]) < 3.0:
     # adding atomic species
@@ -166,21 +152,22 @@ if float(sys.version.split()[0][:3]) < 3.0:
         if final_pos.get_chemical_symbols()[i] != final_pos.get_chemical_symbols()[i+1]:
             fin.append(final_pos.get_chemical_symbols()[i+1])
 
-    f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "r")
+    f = open(i_POSCAR+"_"+str(prm.sym_tol)+".vasp", "r")
     contents = f.readlines()
     f.close()
 
     contents.insert(5, ' '.join(fin)+'\n')
 
-    f = open(i_POSCAR+"_"+str(prm.symmetry)+".vasp", "w")
+    f = open(i_POSCAR+"_"+str(prm.sym_tol)+".vasp", "w")
     contents = "".join(contents)
     f.write(contents)
     f.close()
 
-print("\nOutput file name: %s " % str(i_POSCAR+"_"+str(prm.symmetry)+".vasp"))
+print("\nOutput file name: %s " % str(i_POSCAR+"_"+str(prm.sym_tol)+".vasp"))
 # Post process
 #----------------------------
 endtime = time.time()
 runtime = endtime-starttime
 print("\nEnd of calculation.")
 print("Program was running for %.2f seconds." % runtime)
+
