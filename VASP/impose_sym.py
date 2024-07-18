@@ -100,22 +100,24 @@ spacegroup = spglib.get_spacegroup(initial_cell, symprec=float(prm.sym_tol))
 print("Spacegroup: %s" % spacegroup)
 
 print('\n===========================================')
-print("\nFinding primitive cell...")
+#  print("\nFinding primitive cell...")
 
 # impoer or not?
 if prm.no_ideal==False:
     print('\nImposing symmetry...')
     if prm.to_primitive:
-        print('\nFinding primitive cell...')
+        print('\nUsing primitive cell...')
         f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=False, symprec=float(prm.sym_tol))
     else:
+        print('\nUsing original cell...')
         f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=False, no_idealize=False, symprec=float(prm.sym_tol))
 else:
-    print('\nsymmetry NOT imposed')
+    print('\nSymmetry is NOT imposed')
     if prm.to_primitive:
         print('\nFinding primitive cell...')
         f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=True, no_idealize=True, symprec=float(prm.sym_tol))
     else:
+        print('\nUsing original cell...')
         f_lattice, f_positions, f_numbers = spglib.standardize_cell(initial_cell, to_primitive=False, no_idealize=True, symprec=float(prm.sym_tol))
 
 # Final structure
