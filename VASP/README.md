@@ -17,6 +17,22 @@ Calculate charge electron and ion charge centers.
 chgcent.py CHGCAR OUTCAR
 ```
 
+### chgcent_cube.py
+Calculate charge electron and ion charge centers. Suitable for cube files.
+- Read:
+  - filename.cube
+  - ZVAL [list of integers, manual input]
+  - ions_per_type [list of integers, manual input]
+- Output:
+  - charge center
+  - dipole moment [elect]
+  - dipole moment [ionic]
+  - total dipole moment
+- Usage:
+```
+chgcent.py filename.cube "1 2" "3 4"
+```
+
 ### chgdiff.py
 Calculate differential charge density. `CHGDIFF = CHG1 - CHG2`
 - Read:
