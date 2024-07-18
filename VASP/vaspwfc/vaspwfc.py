@@ -161,13 +161,13 @@ class vaspwfc(object):
         # goto the start of the file and read the first record
         self._wfc.seek(0)
         self._recl, self._nspin, self._rtag = np.array(
-                np.fromfile(self._wfc, dtype=np.float, count=3),
+                np.fromfile(self._wfc, dtype=float, count=3),
                 dtype=int
         )
         self._WFPrec = self.setWFPrec()
         # the second record
         self._wfc.seek(self._recl)
-        dump = np.fromfile(self._wfc, dtype=np.float, count=12)
+        dump = np.fromfile(self._wfc, dtype=float, count=12)
 
         self._nkpts  = int(dump[0])                     # No. of k-points
         self._nbands = int(dump[1])                     # No. of bands
@@ -215,7 +215,7 @@ class vaspwfc(object):
             for jj in range(self._nkpts):
                 rec = self.whereRec(ii+1, jj+1, 1) - 1
                 self._wfc.seek(rec * self._recl)
-                dump = np.fromfile(self._wfc, dtype=np.float, count=4+3*self._nbands)
+                dump = np.fromfile(self._wfc, dtype=float, count=4+3*self._nbands)
                 if ii == 0:
                     self._nplws[jj] = int(dump[0])
                     self._kvecs[jj] = dump[1:4]
@@ -420,7 +420,7 @@ class vaspwfc(object):
         else:
             ngrid = np.array(ngrid, dtype=int)
             assert ngrid.shape == (3,)
-            assert np.alltrue(ngrid >= self._ngrid), \
+            assert np.all(ngrid >= self._ngrid), \
                     "Minium FT grid size: (%d, %d, %d)" % \
                     (self._ngrid[0], self._ngrid[1], self._ngrid[2])
 
