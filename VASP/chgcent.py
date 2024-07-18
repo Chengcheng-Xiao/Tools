@@ -138,9 +138,9 @@ average_z *= dA_z
 
 # get unit length using NGXF NGYF and NGZF
 # position start at 0
-xdiff = latticelength[0]/float(ngridpts[0])
-ydiff = latticelength[1]/float(ngridpts[1])
-zdiff = latticelength[2]/float(ngridpts[2])
+#  xdiff = latticelength[0]/float(ngridpts[0])
+#  ydiff = latticelength[1]/float(ngridpts[1])
+#  zdiff = latticelength[2]/float(ngridpts[2])
 
 avg_x=avg_y=avg_z=0.0
 # Calculate averaged position
