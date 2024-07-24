@@ -441,7 +441,7 @@ class vaspwfc(object):
             if self._gam_half == 'z':
                 phi_k = np.zeros((ngrid[0], ngrid[1], ngrid[2]/2 + 1), dtype=np.complex128)
             else:
-                phi_k = np.zeros((ngrid[0]/2 + 1, ngrid[1], ngrid[2]), dtype=np.complex128)
+                phi_k = np.zeros((int(ngrid[0]/2 + 1), ngrid[1], ngrid[2]), dtype=np.complex128)
         else:
             phi_k = np.zeros(ngrid, dtype=np.complex128)
 
